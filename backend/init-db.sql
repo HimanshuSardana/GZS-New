@@ -17,8 +17,8 @@ DO $$ BEGIN
 END $$;
 
 -- Database is created by POSTGRES_DB env var in Docker; grant privileges here
-GRANT ALL PRIVILEGES ON DATABASE GzoneSphere TO gzs_core_user;
-GRANT ALL PRIVILEGES ON DATABASE GzoneSphere TO gzs_cms_user;
+GRANT ALL PRIVILEGES ON DATABASE "GzoneSphere" TO gzs_core_user;
+GRANT ALL PRIVILEGES ON DATABASE "GzoneSphere" TO gzs_cms_user;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
