@@ -12,6 +12,116 @@
      / --text-* tokens. One colour (#22c55e) mapped to --status-success.
    ========================================================== */
 
+/* ── Handoff design tokens ─────────────────────────────── */
+
+/* Community Hub hero section */
+.community-hub-hero {
+  padding: 32px 32px 24px;
+  background: linear-gradient(135deg, #FAF5FF 0%, #EFF6FF 50%, #ECFDF5 100%);
+  border-bottom: 1px solid var(--slate-200, #E2E8F0);
+}
+
+/* Dark live-activity ticker */
+.live-ticker {
+  padding: 14px 32px;
+  background: #0F172A;
+  color: #94A3B8;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+}
+.live-ticker-badge {
+  color: #22C55E;
+  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* 9-branch grid card — color left border */
+.branch-grid-card {
+  background: #fff;
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.branch-grid-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  transform: translateY(-2px);
+}
+
+/* Branch view header — color top border + gradient bg */
+.branch-view-header {
+  border-bottom: 1px solid var(--slate-200, #E2E8F0);
+}
+
+/* Stats pill bar (online count, branches etc.) */
+.hub-stats-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* Hub filter pills */
+.hub-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--slate-100, #F1F5F9);
+  color: var(--slate-600, #475569);
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.hub-pill.active {
+  background: var(--gzs-brand-blue, #1D6ADB);
+  color: #fff;
+}
+
+/* Showcase thumbnail placeholder */
+.showcase-thumb {
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  background: linear-gradient(135deg, #14B8A6, #0f9488);
+}
+
+/* Branch channel section label */
+.channel-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--slate-400, #94A3B8);
+  padding: 0 6px;
+  margin-bottom: 6px;
+}
+
+/* Voice room row */
+.voice-room-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.voice-room-row:hover { background: var(--slate-100, #F1F5F9); }
+
 /* ── Scrollbars ─────────────────────────────────────────── */
 .custom-scrollbar::-webkit-scrollbar       { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -87,3 +197,384 @@
   border: 2px solid var(--theme-card);
   flex-shrink: 0;
 }
+
+/* Community Hub Layout */
+.community-hub-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  gap: 0;
+  min-height: calc(100dvh - 64px);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  background: var(--theme-bg);
+}
+@media (max-width: 1280px) {
+  .community-hub-layout { grid-template-columns: 220px 1fr; }
+  .community-hub-right-sidebar { display: none; }
+}
+@media (max-width: 768px) {
+  .community-hub-layout { grid-template-columns: 1fr; }
+  .community-hub-left-sidebar { display: none; }
+}
+
+/* Left sidebar: branch list */
+.community-hub-left-sidebar {
+  border-right: 1px solid var(--theme-border);
+  padding: var(--space-6) var(--space-4);
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100dvh - 64px);
+}
+
+.community-branch-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-decoration: none;
+}
+.community-branch-item:hover { background: var(--theme-bg-alt); }
+.community-branch-item.is-active { background: var(--theme-primary-soft, rgba(29,106,219,0.08)); }
+
+.community-branch-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.community-branch-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--theme-text);
+  line-height: 1.2;
+}
+.community-branch-meta {
+  font-size: var(--text-xs);
+  color: var(--theme-text-muted);
+}
+
+/* Main feed area */
+.community-hub-main {
+  padding: var(--space-6);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.community-hub-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--theme-bg-alt);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+}
+
+.community-hub-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--theme-border);
+  padding-bottom: var(--space-3);
+}
+
+.community-hub-tab {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  background: transparent;
+  color: var(--theme-text-muted);
+}
+.community-hub-tab.is-active {
+  background: var(--theme-primary);
+  color: white;
+}
+
+/* Live activity banner */
+.community-live-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--theme-bg-alt);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+}
+
+/* Announcement cards */
+.community-announcement-card {
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  background: var(--theme-card);
+  transition: border-color 0.15s;
+}
+.community-announcement-card:hover { border-color: var(--theme-primary); }
+
+.community-announcement-card--pinned {
+  border-left: 3px solid var(--theme-primary);
+  background: var(--theme-primary-soft, rgba(29,106,219,0.04));
+}
+
+/* Event cards */
+.community-events-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+@media (max-width: 900px) {
+  .community-events-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.community-event-card {
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  background: var(--theme-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Right sidebar: friends + recommendations */
+.community-hub-right-sidebar {
+  border-left: 1px solid var(--theme-border);
+  padding: var(--space-6) var(--space-4);
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100dvh - 64px);
+}
+
+.community-sidebar-section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--theme-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.community-friend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+/* Branch Hub Three-Column Layout */
+.branch-hub-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  min-height: calc(100dvh - 64px);
+  background: var(--theme-bg);
+}
+@media (max-width: 1100px) {
+  .branch-hub-layout { grid-template-columns: 220px 1fr; }
+  .branch-hub-right-panel { display: none; }
+}
+@media (max-width: 768px) {
+  .branch-hub-layout { grid-template-columns: 1fr; }
+  .branch-hub-left-panel { display: none; }
+}
+
+.branch-hub-left-panel {
+  border-right: 1px solid var(--theme-border);
+  background: var(--theme-bg-alt);
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100dvh - 64px);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.branch-hub-main {
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-8);
+  min-width: 0;
+  isolation: isolate;
+}
+
+.branch-hub-right-panel {
+  border-left: 1px solid var(--theme-border);
+  background: var(--theme-bg-alt);
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100dvh - 64px);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  z-index: 10;
+  isolation: isolate;
+}
+
+/* Branch Header */
+.branch-hub-header {
+  margin-bottom: var(--space-8);
+}
+
+.branch-hub-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--theme-primary);
+  margin-bottom: var(--space-2);
+}
+
+.branch-hub-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-tightest);
+  color: var(--theme-text);
+  line-height: 1.05;
+  margin-bottom: var(--space-3);
+}
+
+.branch-hub-description {
+  font-size: var(--text-base);
+  color: var(--theme-text-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-5);
+}
+
+/* Enroll/Opt-out buttons */
+.branch-enroll-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.branch-enroll-btn--enrolled {
+  background: var(--theme-primary);
+  color: white;
+}
+.branch-enroll-btn--unenrolled {
+  background: var(--theme-bg-alt);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-text);
+}
+
+/* Module tabs (Channels, Groups, LFG, Showcase, Events) */
+.branch-module-tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--theme-border);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+}
+
+.branch-module-tab {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--theme-text-muted);
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.branch-module-tab.is-active {
+  color: var(--theme-primary);
+  border-bottom-color: var(--theme-primary);
+}
+
+/* Pinned Announcement card */
+.branch-pinned-card {
+  border-left: 3px solid var(--theme-primary);
+  background: var(--theme-card);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.branch-pinned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--theme-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* Right panel: Active Members section */
+.branch-section-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--theme-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.branch-member-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--theme-border);
+}
+
+.branch-member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Channel list in sidebar */
+.branch-channel-list { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.branch-channel-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-decoration: none;
+}
+.branch-channel-item:hover { background: var(--theme-bg); color: var(--theme-text); }
+.branch-channel-item.is-active { background: var(--theme-bg); color: var(--theme-text); font-weight: 700; }

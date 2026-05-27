@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ── Job 1: Frontend unit tests ───────────────────────────────────────────────
+  frontend-test:
+    name: Frontend — Vitest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  # ── Job 2: Frontend production build + chunk-size gate ───────────────────────
+  frontend-build:
+    name: Frontend — Vite build
+    runs-on: ubuntu-latest
+
+    env:
+      # Baked into the JS bundle at build time; these are CI placeholder values.
+      # Real production URLs are supplied via repository secrets in deploy workflows.
+      VITE_CORE_API_URL: /api/core
+      VITE_CMS_API_URL: /api/cms
+      VITE_USE_MOCK: 'false'
+      VITE_REAL_AUTH: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Fail if any JS chunk exceeds 500 KiB (chunkSizeWarningLimit: 500 in vite.config.js).
+      # Vite emits warnings but does not exit non-zero on size violations; this step does.
+      - name: Check chunk sizes (≤ 500 KB)
+        run: |
+          FAIL=0
+          LIMIT=512000  # 500 KiB in bytes
+          for f in dist/assets/*.js; do
+            [ -f "$f" ] || continue
+            SIZE=$(stat -c%s "$f")
+            if [ "$SIZE" -gt "$LIMIT" ]; then
+              KB=$(( SIZE / 1024 ))
+              echo "::error file=$f::Chunk too large: $(basename "$f") — ${KB} KB > 500 KB. Split it with manualChunks or dynamic import()."
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" -eq 0 ]; then
+            echo "✓ All chunks within 500 KB limit."
+          fi
+          exit $FAIL
+
+  # ── Job 3: Backend linting ───────────────────────────────────────────────────
+  backend-lint:
+    name: Backend — go vet + ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Go — CMS API
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: backend/cms-api/go.sum
+
+      - name: go vet (cms-api)
+        working-directory: backend/cms-api
+        run: go vet ./...
+
+      # Python — Core API
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: ruff check (core-api)
+        working-directory: backend/core-api
+        run: ruff check .

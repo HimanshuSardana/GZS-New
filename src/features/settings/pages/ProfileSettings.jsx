@@ -1,148 +1,173 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiChevronLeft, FiEyeOff, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
-
-const SUB_PROFILES = [
-    { id: 'dev', label: 'Game Dev' },
-    { id: 'art', label: 'Game Art' },
-    { id: 'audio', label: 'Audio' },
-    { id: 'writing', label: 'Writing' },
-    { id: 'esports', label: 'Esports' },
-    { id: 'content', label: 'Content' },
-    { id: 'business', label: 'Business' },
-];
-
-const AVAILABILITY_OPTIONS = ['Active', 'Open to Work', 'Not Available'];
-const ENGAGEMENT_TYPES = ['Full-time', 'Contract', 'Freelance', 'Project-based'];
+import { SettingsField, SettingsSection, SettingsShell } from '../components/SettingsShell';
+import { useSettingsForm } from '../useSettingsForm';
+import profileService from '@/services/features/profileService';
+import core from '@/services/api/core';
+import { CORE } from '@/services/api/endpoints';
+import Skeleton from '@/shared/components/Skeleton';
+import { FiCamera } from 'react-icons/fi';
 
 export default function ProfileSettings() {
-    usePageTheme('profile');
-    const navigate = useNavigate();
-    const [blindMode, setBlindMode] = useState(false);
-    const [ndaReady, setNdaReady] = useState(false);
-    const [availability, setAvailability] = useState('Active');
-    const [engagement, setEngagement] = useState('Contract');
-    const [visibleProfiles, setVisibleProfiles] = useState({ dev: true, art: true, audio: false, writing: false, esports: false, content: false, business: false });
+  usePageTheme('profile');
+  const avatarInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
-    const toggleProfile = (id) => setVisibleProfiles(prev => ({ ...prev, [id]: !prev[id] }));
+  const { values, isLoading, isSaving, isDirty, handleChange, handleSave } = useSettingsForm(
+    () => profileService.getMasterProfile(),
+    (data) => profileService.updateMasterProfile(data)
+  );
 
-    return (
-        <div className="min-h-screen bg-[var(--theme-bg)] font-body pb-24 lg:pb-8">
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-            <div className="bg-[var(--theme-card)] border-b border-[var(--theme-border)] px-6 py-8">
-                <div className="max-w-2xl mx-auto flex items-center gap-3">
-                    <button onClick={() => navigate('/settings')} className="flex items-center gap-1.5 text-xs font-black text-[var(--theme-text-muted)] hover:text-[var(--theme-primary)] transition-colors uppercase tracking-tight italic">
-                        <FiChevronLeft size={14} strokeWidth={3} /> SETTINGS
-                    </button>
-                    <span className="text-[var(--theme-border)]">/</span>
-                    <span className="text-xs font-black uppercase tracking-tight text-[var(--theme-text)] italic">CORE IDENTITY</span>
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      const response = await core.post(CORE.USER.AVATAR, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      handleChange('avatar_url', response.data.avatar_url);
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+    }
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Profile Settings | GzoneSphere</title>
+      </Helmet>
+      <SettingsShell
+        title="Profile Settings"
+        subtitle="Manage your public identity, visual branding, and professional details."
+      >
+        <SettingsSection
+          title="Visual Identity"
+          description="Update your profile avatar and banner image."
+        >
+          <div className="space-y-8">
+            {/* Banner Section */}
+            <div className="relative group">
+              <div className="h-48 w-full rounded-2xl bg-[var(--theme-bg-alt)] border border-[var(--theme-border)] overflow-hidden">
+                {isLoading ? <Skeleton className="h-full w-full" /> : (
+                  values.banner_url ? (
+                    <img src={values.banner_url} alt="Banner" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-[var(--theme-text-muted)] italic text-sm">
+                      No banner image set
+                    </div>
+                  )
+                )}
+              </div>
+              <button
+                type="button"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"
+                onClick={() => bannerInputRef.current?.click()}
+              >
+                <div className="flex items-center gap-2 text-white font-black uppercase text-xs tracking-widest italic">
+                  <FiCamera size={18} /> UPDATE BANNER
                 </div>
+              </button>
+              <input
+                type="file"
+                ref={bannerInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    // In a real app we'd upload here. For now we set temporary preview or mock
+                    handleChange('banner_url', URL.createObjectURL(file));
+                  }
+                }}
+              />
             </div>
 
-            <div className="max-w-2xl mx-auto px-4 md:px-8 py-12 space-y-8">
+            {/* Avatar Section */}
+            <div className="relative w-32 h-32 -mt-16 ml-8 group">
+              <div className="w-full h-full rounded-full border-4 border-[var(--theme-bg)] bg-[var(--theme-bg-alt)] overflow-hidden shadow-xl">
+                {isLoading ? <Skeleton className="h-full w-full" /> : (
+                  values.avatar_url ? (
+                    <img src={values.avatar_url} alt="Avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-[var(--theme-text-muted)] font-black text-2xl uppercase">
+                      {values.display_name?.[0] || '?'}
+                    </div>
+                  )
+                )}
+              </div>
+              <button
+                type="button"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                <FiCamera size={24} className="text-white" />
+              </button>
+              <input
+                type="file"
+                ref={avatarInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+              />
+            </div>
+          </div>
+        </SettingsSection>
 
-                {/* Blind Mode */}
-                <ToggleCard
-                    title="Blind Mode"
-                    desc="Hides your name, photo, and demographic information on company challenge applications. Companies see only your verified skill scores."
-                    icon={FiEyeOff}
-                    value={blindMode}
-                    onChange={setBlindMode}
+        <SettingsSection
+          title="Profile Details"
+          description="Update your professional information and online presence."
+        >
+          <div className="grid gap-6 md:grid-cols-2">
+            <SettingsField label="Tagline">
+              {isLoading ? <Skeleton className="h-12 w-full rounded-2xl" /> : (
+                <input
+                  className="pr-input"
+                  value={values.tagline || ''}
+                  onChange={(e) => handleChange('tagline', e.target.value)}
+                  placeholder="e.g. Senior Game Developer @ Ubisoft"
                 />
-
-                {/* NDA Ready */}
-                <ToggleCard
-                    title="NDA-Ready"
-                    desc="Specifies to companies that you are willing to sign NDAs before seeing confidential project briefs."
-                    value={ndaReady}
-                    onChange={setNdaReady}
+              )}
+            </SettingsField>
+            <SettingsField label="Location">
+              {isLoading ? <Skeleton className="h-12 w-full rounded-2xl" /> : (
+                <input
+                  className="pr-input"
+                  value={values.location || ''}
+                  onChange={(e) => handleChange('location', e.target.value)}
+                  placeholder="e.g. Montreal, Canada"
                 />
-
-                {/* Availability */}
-                <div className="bg-[var(--theme-card)] rounded-3xl border border-[var(--theme-border)] p-8 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-tight text-[var(--theme-text-muted)] mb-6 italic">Availability Protocol</p>
-                    <div className="flex flex-wrap gap-3">
-                        {AVAILABILITY_OPTIONS.map(opt => (
-                            <button
-                                key={opt}
-                                onClick={() => setAvailability(opt)}
-                                className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all italic border ${
-                                    availability === opt 
-                                        ? 'bg-[var(--theme-primary)] text-white border-[var(--theme-primary)] shadow-lg shadow-[var(--theme-primary)]/20' 
-                                        : 'bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] border-[var(--theme-border)] hover:bg-[var(--theme-card)]'
-                                }`}
-                            >
-                                {opt}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Engagement type */}
-                <div className="bg-[var(--theme-card)] rounded-3xl border border-[var(--theme-border)] p-8 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-tight text-[var(--theme-text-muted)] mb-6 italic">Engagement Configuration</p>
-                    <div className="flex flex-wrap gap-3">
-                        {ENGAGEMENT_TYPES.map(opt => (
-                            <button
-                                key={opt}
-                                onClick={() => setEngagement(opt)}
-                                className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all italic border ${
-                                    engagement === opt 
-                                        ? 'bg-[var(--theme-primary)] text-white border-[var(--theme-primary)] shadow-lg shadow-[var(--theme-primary)]/20' 
-                                        : 'bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] border-[var(--theme-border)] hover:bg-[var(--theme-card)]'
-                                }`}
-                            >
-                                {opt}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Sub-profile visibility */}
-                <div className="bg-[var(--theme-card)] rounded-3xl border border-[var(--theme-border)] p-8 shadow-sm">
-                    <p className="text-xs font-black uppercase tracking-tight text-[var(--theme-text)] mb-1 italic">Fragment Visibility</p>
-                    <p className="text-xs font-medium text-[var(--theme-text-muted)] mb-8 italic">Control which fragments appear in the global directory.</p>
-                    <div className="space-y-2">
-                        {SUB_PROFILES.map(p => (
-                            <div key={p.id} className="flex items-center justify-between py-4 border-b border-[var(--theme-border)] last:border-0">
-                                <span className="text-sm font-bold text-[var(--theme-text)] uppercase tracking-tight italic">{p.label}</span>
-                                <button onClick={() => toggleProfile(p.id)} className="text-[var(--theme-primary)]">
-                                    {visibleProfiles[p.id] ? <FiToggleRight size={32} /> : <FiToggleLeft size={32} className="text-[var(--theme-text-muted)] opacity-30" />}
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <button
-                    onClick={() => navigate('/onboarding/profile-select')}
-                    className="w-full py-5 rounded-3xl text-xs font-black uppercase tracking-tight text-[var(--theme-primary)] border-2 border-dashed border-[var(--theme-primary)]/20 hover:border-[var(--theme-primary)] hover:bg-[var(--theme-primary)]/5 transition-all italic"
-                >
-                    + INITIALIZE NEW FRAGMENT
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function ToggleCard({ title, desc, icon: Icon, value, onChange }) {
-    return (
-        <div className={`bg-[var(--theme-card)] rounded-3xl border-2 p-8 transition-all shadow-sm ${value ? 'border-[var(--theme-primary)]/40 bg-[var(--theme-primary)]/5' : 'border-[var(--theme-border)]'}`}>
-            <div className="flex items-start justify-between gap-6">
-                <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                        {Icon && <Icon size={16} className="text-[var(--theme-primary)]" />}
-                        <p className="text-xs font-black uppercase tracking-tight text-[var(--theme-text)] italic">{title}</p>
-                    </div>
-                    <p className="text-xs text-[var(--theme-text-muted)] leading-relaxed font-medium italic opacity-80">{desc}</p>
-                </div>
-                <button onClick={() => onChange(!value)} className="shrink-0 text-[var(--theme-primary)] mt-1">
-                    {value ? <FiToggleRight size={36} /> : <FiToggleLeft size={36} className="text-[var(--theme-text-muted)] opacity-30" />}
-                </button>
-            </div>
-        </div>
-    );
+              )}
+            </SettingsField>
+            <SettingsField label="Website">
+              {isLoading ? <Skeleton className="h-12 w-full rounded-2xl" /> : (
+                <input
+                  className="pr-input"
+                  value={values.website || ''}
+                  onChange={(e) => handleChange('website', e.target.value)}
+                  placeholder="https://yourportfolio.com"
+                />
+              )}
+            </SettingsField>
+          </div>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              className="pr-btn-primary"
+              disabled={!isDirty || isSaving}
+              onClick={handleSave}
+            >
+              {isSaving ? 'SAVING...' : 'Save Changes'}
+            </button>
+          </div>
+        </SettingsSection>
+      </SettingsShell>
+    </>
+  );
 }
 
 

@@ -1,26 +1,25 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '@/app/layouts/AuthLayout';
-import { useAuth } from '@/app/providers/AuthProvider';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
+import { useAuthActions as useAuth } from '@/services/mutators/useAuthActions';
+import useAdminAuthStore from '@/store/admin/useAdminAuthStore';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-
-const DUMMY_MODE = true; // matches AuthProvider.jsx
 
 export default function Login() {
     usePageTheme('auth');
 
     const navigate  = useNavigate();
     const location  = useLocation();
-    const { dummyLogin } = useAuth();
+    const { login, isLoggingIn } = useAuth();
+    const hydrateAdminStore = useAdminAuthStore((s) => s.hydrate);
 
     const [email, setEmail]               = useState('');
     const [password, setPassword]         = useState('');
+    const [rememberMe, setRememberMe]     = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading]           = useState(false);
     const [error, setError]               = useState('');
 
-    const from = location.state?.from?.pathname || '/profile';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,36 +28,24 @@ export default function Login() {
             return;
         }
         setError('');
-        setLoading(true);
-        await new Promise(r => setTimeout(r, 800));
 
-        if (DUMMY_MODE) {
-            const username = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') || 'Player';
-            let persona = 'player';
-            if (email.includes('dev'))   persona = 'dev';
-            if (email.includes('admin')) persona = 'admin';
-            dummyLogin({ persona, username, email, id: `U-${Date.now()}` });
-            setLoading(false);
-            navigate(from, { replace: true });
-        } else {
-            try {
-                // Production path:
-                // const { token } = await authService.login({ email, password });
-                // login(token);
-                // navigate(from, { replace: true });
-            } catch (err) {
-                setError(err?.response?.data?.error?.message || 'Login failed. Please try again.');
-                setLoading(false);
+        try {
+            await login({ email, password });
+
+            if (rememberMe) {
+                localStorage.setItem('gzs_remember_me', 'true');
             }
-        }
-    };
 
-    const handleDevLogin = async () => {
-        setLoading(true);
-        await new Promise(r => setTimeout(r, 400));
-        dummyLogin({ persona: 'admin' });
-        setLoading(false);
-        navigate(from, { replace: true });
+            // Re-hydrate the admin store so AdminAuthGuard sees the new user immediately
+            hydrateAdminStore();
+
+                    const isAdminLogin = new URLSearchParams(location.search).get('admin') === 'true';
+            const from = location.state?.from || (isAdminLogin ? '/admin' : '/profile');
+            navigate(from, { replace: true });
+        } catch (err) {
+            const msg = err.response?.data?.error?.message || "Invalid email or password";
+            setError(msg);
+        }
     };
 
     return (
@@ -70,10 +57,11 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} className="auth-form">
                 {error && (
-                    <p className="text-red-500 text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-lg">{error}</p>
+                    <div className="p-4 bg-[var(--status-error-soft)] border border-[var(--status-error)] rounded-xl text-sm text-[var(--status-error)] mb-4">
+                        {error}
+                    </div>
                 )}
 
-                {/* Email or Username */}
                 <div>
                     <label className="auth-label">Email or Username</label>
                     <input
@@ -87,7 +75,6 @@ export default function Login() {
                     />
                 </div>
 
-                {/* Password */}
                 <div>
                     <label className="auth-label">Password</label>
                     <div className="relative">
@@ -109,24 +96,32 @@ export default function Login() {
                             {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                         </button>
                     </div>
-                    <div className="flex justify-end mt-1.5">
-                        <Link to="/forgot-password" className="text-xs text-[#1E6F9F] hover:underline underline-offset-2">
-                            Forgot password?
-                        </Link>
-                    </div>
                 </div>
 
-                {/* Submit */}
-                <button type="submit" disabled={loading} className="auth-btn-primary mt-1">
-                    {loading ? (
+                <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={e => setRememberMe(e.target.checked)}
+                            className="w-4 h-4 rounded border-gray-300 text-[#1E6F9F] focus:ring-[#1E6F9F]"
+                        />
+                        <span className="text-xs text-gray-600">Remember me</span>
+                    </label>
+                    <Link to="/forgot-password" className="text-xs text-[#1E6F9F] hover:underline underline-offset-2">
+                        Forgot password?
+                    </Link>
+                </div>
+
+                <button type="submit" disabled={isLoggingIn} className="auth-btn-primary mt-1">
+                    {isLoggingIn ? (
                         <>
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                             Signing in...
                         </>
                     ) : 'Log In →'}
                 </button>
 
-                {/* Switch to Signup */}
                 <p className="text-center text-sm text-gray-500">
                     Don't have an account?{' '}
                     <Link to="/signup" className="text-[#1E6F9F] font-semibold hover:underline underline-offset-2">
@@ -134,20 +129,6 @@ export default function Login() {
                     </Link>
                 </p>
             </form>
-
-            {/* Dev login shortcut — subtle, dev-only */}
-            {DUMMY_MODE && (
-                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                    <button
-                        type="button"
-                        onClick={handleDevLogin}
-                        disabled={loading}
-                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40"
-                    >
-                        Dev login (Admin)
-                    </button>
-                </div>
-            )}
         </AuthLayout>
     );
 }

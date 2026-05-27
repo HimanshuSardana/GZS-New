@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 /**
@@ -19,25 +20,30 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 
 const THEME_CLASSES = [
   'theme-home',
-  'theme-esports',
-  'theme-blog',
-  'theme-about',
-  'theme-auth',
-  'theme-profile',
-  'theme-contact',
-  'theme-admin',
-  'theme-collection',
+  'theme-games',
   'theme-gamepost',
-  'theme-tournaments',
-  'theme-dev',
-  'theme-content',
-  'theme-business',
-  'theme-art',
-  'theme-writing',
-  'theme-audio',
+  'theme-blog',
+  'theme-esports',
+  'theme-profile',
   'theme-community',
-  'theme-tournaments-page',
+  'theme-auth',
+  'theme-admin',
 ];
+
+// Map variant names that don't have a dedicated CSS class to the nearest defined theme
+const THEME_ALIASES = {
+  collection:         'games',
+  'tournaments-page': 'esports',
+  tournaments:        'esports',
+  about:              'home',
+  contact:            'home',
+  dev:                'profile',
+  content:            'profile',
+  business:           'profile',
+  art:                'profile',
+  writing:            'profile',
+  audio:              'profile',
+};
 
 /**
  * Themes with dark hero sections (transparent-dark navbar state)
@@ -46,10 +52,11 @@ const THEME_CLASSES = [
 export const DARK_HERO_THEMES = [
   'home',
   'esports',
+  'tournaments',
+  'tournaments-page',
   'about',
   'gamepost',
   'community',
-  'tournaments',
 ];
 
 const ThemeContext = createContext(undefined);
@@ -64,16 +71,16 @@ export function ThemeProvider({ children }) {
     // Remove all theme classes first
     THEME_CLASSES.forEach(cls => root.classList.remove(cls));
 
-    // Apply the new theme class
+    // Apply the new theme class (resolve alias if needed)
     if (currentTheme) {
-      const className = `theme-${currentTheme}`;
+      const resolved = THEME_ALIASES[currentTheme] ?? currentTheme;
+      const className = `theme-${resolved}`;
       if (THEME_CLASSES.includes(className)) {
         root.classList.add(className);
       }
     }
 
     return () => {
-      // Cleanup on unmount
       THEME_CLASSES.forEach(cls => root.classList.remove(cls));
     };
   }, [currentTheme]);

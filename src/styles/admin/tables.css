@@ -1,6 +1,13 @@
 @layer components {
 
   /* ── TABLE ───────────────────────────────────────────────── */
+  .admin-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--theme-border);
+    background-color: var(--theme-card);
+  }
+  
   .admin-table-wrap {
     width: 100%;
     overflow-x: auto;
@@ -8,47 +15,54 @@
     border-radius: 0.5rem;
     background-color: var(--theme-card);
   }
+  
   .admin-table {
     width: 100%;
-    font-size: 13px;
     border-collapse: collapse;
+    font-size: var(--text-sm);
   }
-  .admin-table thead tr {
-    background-color: var(--theme-bg-alt);
-  }
+  
   .admin-table thead th {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-    padding-top: var(--space-3);
-    padding-bottom: var(--space-3);
+    padding: var(--space-3) var(--space-4);
     text-align: left;
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--tracking-wider);
     color: var(--theme-text-muted);
+    background: var(--theme-bg-alt);
     border-bottom: 1px solid var(--theme-border);
-    white-space: nowrap;
   }
+  
   .admin-table tbody tr {
     border-bottom: 1px solid var(--theme-border);
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+    transition: background-color 0.15s;
   }
-  .admin-table tbody tr:hover {
-    background-color: var(--theme-bg-alt);
+  
+  .admin-table tbody tr:hover { 
+    background: var(--theme-bg-alt); 
   }
-  .admin-table tbody tr:last-child {
-    border-bottom-width: 0px;
-  }
+  
   .admin-table tbody td {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-    padding-top: var(--space-3);
-    padding-bottom: var(--space-3);
+    padding: var(--space-4);
     color: var(--theme-text);
-    white-space: nowrap;
+    vertical-align: middle;
+  }
+  
+  .admin-table-cell-meta {
+    font-size: var(--text-xs);
+    color: var(--theme-text-muted);
+  }
+  
+  .admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
   }
 
   .admin-table-page {

@@ -24,7 +24,7 @@ const PROBLEMS = [
 export default function ProblemSection() {
   return (
     <section className="section-grey">
-      <div className="section-container">
+      <div className="container-global">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

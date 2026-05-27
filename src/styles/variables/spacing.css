@@ -38,4 +38,5 @@
   /* ── Layout Dimension Tokens ── */
   --content-max:          1280px;            /* canonical content width */
   --sidebar-width:        280px;             /* standard sidebar */
+  --navbar-height:        64px;              /* fixed navbar height */
 }

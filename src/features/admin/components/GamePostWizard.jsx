@@ -5,6 +5,7 @@ import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useToast } from '@/shared/components/Toast';
 import { mockApiService } from '@services/mockApiService';
 import { AdminPageHero, AdminPanel, AdminMetrics, AdminEmptyState } from './AdminContentShell';
+import AIFeaturePlaceholder from '@/shared/components/AIFeaturePlaceholder';
 import { ensureArray, normalizeStatus, safeString, slugify, toIsoDate } from './adminFormUtils';
 
 const PLATFORM_OPTIONS = ['PC', 'PlayStation', 'Xbox', 'Mobile', 'Cross-platform'];
@@ -17,17 +18,18 @@ const GENRE_OPTIONS = [
 const STATUS_OPTIONS = ['Draft', 'Published', 'Archived'];
 const SCORE_DESCRIPTORS = ['Outstanding', 'Excellent', 'Great', 'Good', 'Mixed', 'Poor'];
 const BRANCH_OPTIONS = ['Esports', 'Dev', 'General', 'Writing', 'Art', 'Content'];
+const SOCIAL_PLATFORMS = ['Discord', 'Twitter', 'Instagram', 'TikTok', 'YouTube', 'Twitch', 'Other'];
 
 const STEPS = [
-  { id: 'basic', label: 'Basic Information', subtitle: 'Hero, platforms, genres, slug, and publish state' },
-  { id: 'story', label: 'Story & Content', subtitle: 'Overview, gameplay description, and key mechanics' },
-  { id: 'media', label: 'Media', subtitle: 'Hero art, cover art, gallery media, and video' },
-  { id: 'overview', label: 'Quick Overview', subtitle: 'Controls, DLC toggle, and game modes' },
+  { id: 'basic',        label: 'Basic Information',  subtitle: 'Hero, platforms, genres, slug, and publish state' },
+  { id: 'story',        label: 'Story & Content',    subtitle: 'Overview, gameplay description, and key mechanics' },
+  { id: 'media',        label: 'Media',              subtitle: 'Hero art, cover art, gallery media, and video' },
+  { id: 'overview',     label: 'Quick Overview',     subtitle: 'Controls, DLC toggle, and game modes' },
   { id: 'requirements', label: 'System Requirements', subtitle: 'Minimum and recommended specifications' },
-  { id: 'store', label: 'Store & Extras', subtitle: 'Store links, DLC, awards, and achievements' },
-  { id: 'reviews', label: 'Reviews & Community', subtitle: 'Expert reviews, GZS score, and community settings' },
-  { id: 'related', label: 'More Games', subtitle: 'Related titles and AI override setting' },
-  { id: 'social', label: 'Social & Community', subtitle: 'Theme color, socials, and community publishing' },
+  { id: 'store',        label: 'Store & Extras',     subtitle: 'Store links, DLC, awards, and achievements' },
+  { id: 'reviews',      label: 'Reviews & Community', subtitle: 'Expert reviews, GZS score, and community settings' },
+  { id: 'related',      label: 'More Games',         subtitle: 'Related titles' },
+  { id: 'social',       label: 'Social & Community', subtitle: 'Theme color, socials, community publishing, SEO meta' },
 ];
 
 const emptyMechanic = () => ({ label: '', description: '' });
@@ -96,6 +98,14 @@ const defaultForm = {
   instagramUrl: '',
   youtubeUrl: '',
   publishToCommunity: true,
+  communityBranchSlug: '',
+  showTournamentWidget: true,
+  metaTitle: '',
+  metaDescription: '',
+  ogImage: '',
+  canonicalUrl: '',
+  publishImmediately: true,
+  scheduledPublishDate: '',
 };
 
 function hydrateGame(game) {
@@ -149,6 +159,14 @@ function hydrateGame(game) {
     instagramUrl: safeString(game.instagramUrl),
     youtubeUrl: safeString(game.youtubeUrl),
     publishToCommunity: game.publishToCommunity !== false,
+    communityBranchSlug: safeString(game.communityBranchSlug || game.community_branch_slug || ''),
+    showTournamentWidget: game.showTournamentWidget !== false,
+    metaTitle: safeString(game.metaTitle || game.meta_title || ''),
+    metaDescription: safeString(game.metaDescription || game.meta_description || ''),
+    ogImage: safeString(game.ogImage || game.og_image || ''),
+    canonicalUrl: safeString(game.canonicalUrl || game.canonical_url || ''),
+    publishImmediately: game.publishImmediately !== false,
+    scheduledPublishDate: safeString(game.scheduledPublishDate || ''),
   };
 }
 
@@ -175,7 +193,7 @@ function getStepStatus(stepId, form) {
     case 'related':
       return form.relatedGames.length ? 'progress' : 'empty';
     case 'social':
-      return form.socialLinks.some((item) => item.platform && item.url) ? 'progress' : 'empty';
+      return form.socialLinks.some((item) => item.platform && item.url) || form.metaDescription ? 'progress' : 'empty';
     default:
       return 'empty';
   }
@@ -232,6 +250,7 @@ export default function GamePostWizard({ mode = 'create' }) {
   const [loading, setLoading] = useState(mode === 'edit');
   const [saving, setSaving] = useState(false);
   const [libraryGames, setLibraryGames] = useState([]);
+  const [gameSearchQuery, setGameSearchQuery] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -256,6 +275,30 @@ export default function GamePostWizard({ mode = 'create' }) {
     };
   }, [mode, navigate, params.id, showToast]);
 
+  useEffect(() => {
+    if (STEPS[activeStep]?.id !== 'social') return;
+    setForm(prev => ({
+      ...prev,
+      metaDescription: prev.metaDescription || prev.tagline,
+      ogImage: prev.ogImage || prev.heroBackgroundImage,
+      canonicalUrl: prev.canonicalUrl || (prev.slug ? `/games/${prev.slug}` : ''),
+    }));
+  }, [activeStep]);
+
+  const filteredLibraryGames = useMemo(() => {
+    const q = gameSearchQuery.toLowerCase();
+    return libraryGames
+      .filter(g => String(g.id) !== String(params.id))
+      .filter(g => !gameSearchQuery || g.title.toLowerCase().includes(q));
+  }, [libraryGames, gameSearchQuery, params.id]);
+
+  const selectedRelatedGames = useMemo(() =>
+    form.relatedGames
+      .map(slug => libraryGames.find(g => (g.slug || g.title) === slug))
+      .filter(Boolean),
+    [form.relatedGames, libraryGames],
+  );
+
   const score = useMemo(
     () => form.gzsScoreOverride || getAverageScore(form.expertReviews),
     [form.expertReviews, form.gzsScoreOverride],
@@ -269,7 +312,7 @@ export default function GamePostWizard({ mode = 'create' }) {
   const publishReady = stepStatuses.slice(0, 4).every((status) => status === 'complete');
 
   const metrics = [
-    { label: 'Current Step', value: `${activeStep + 1} / 9` },
+    { label: 'Current Step', value: `${activeStep + 1} / ${STEPS.length}` },
     { label: 'Completed Steps', value: `${stepStatuses.filter((status) => status === 'complete').length}` },
     { label: 'GZS Score', value: score || 'Pending' },
     { label: 'Related Games', value: `${form.relatedGames.length}` },
@@ -336,6 +379,19 @@ export default function GamePostWizard({ mode = 'create' }) {
       genre: form.genres[0] || '',
       gameModesOverview: form.gameModesOverview,
       gzsScore: score,
+      community: {
+        hubEnabled: form.communityHubEnabled,
+        branchSlug: form.communityBranchSlug,
+        showTournamentWidget: form.showTournamentWidget,
+        socialLinks: form.socialLinks,
+      },
+      seo: {
+        metaTitle: form.metaTitle || form.title,
+        metaDescription: form.metaDescription || form.tagline,
+        ogImage: form.ogImage || form.heroBackgroundImage,
+        canonicalUrl: form.canonicalUrl || (form.slug ? `/games/${form.slug}` : ''),
+      },
+      scheduledPublishAt: form.publishImmediately ? null : form.scheduledPublishDate,
     };
 
     try {
@@ -462,6 +518,14 @@ export default function GamePostWizard({ mode = 'create' }) {
                   ))}
                 </div>
               </div>
+              <AIFeaturePlaceholder
+                title="SEO Suggestions"
+                description="AI suggests better H2/H3 headings, missing keywords, and meta description improvements based on your content."
+                phase="Phase 2"
+                inputLabel="Paste your meta description for analysis"
+                inputType="textarea"
+                actionLabel="Get SEO Suggestions"
+              />
             </AdminPanel>
           )}
 
@@ -823,6 +887,14 @@ export default function GamePostWizard({ mode = 'create' }) {
                   </label>
                 </div>
               </div>
+              <AIFeaturePlaceholder
+                title="Review Sentiment Analysis"
+                description="Automatically classify user reviews as Positive, Mixed, or Negative. Sentiment distribution chart shown in admin view."
+                phase="Phase 2"
+                inputLabel="Runs automatically on new user reviews"
+                inputType="url"
+                actionLabel="Analyse Sentiment"
+              />
             </AdminPanel>
           )}
 
@@ -865,11 +937,19 @@ export default function GamePostWizard({ mode = 'create' }) {
                   <span>Override AI suggestions with this manual list</span>
                 </label>
               </div>
+              <AIFeaturePlaceholder
+                title="AI Similarity Suggestions"
+                description="Auto-suggest related games based on shared genre, platform, and co-engagement patterns. Admin approves or overrides."
+                phase="Phase 2"
+                inputLabel="AI scans game metadata automatically"
+                inputType="url"
+                actionLabel="Generate Suggestions"
+              />
             </AdminPanel>
           )}
 
           {activeStep === 8 && (
-            <AdminPanel title="Step 9: Social & Community" meta="Brand color, socials, join heading, and community publishing settings.">
+            <AdminPanel title="Step 9: Social & Community" meta="Brand color, socials, community publishing settings, and SEO meta.">
               <div className="admin-form-card">
                 <div className="admin-form-grid cols-2">
                   <Input label="Game Colour Theme" type="color" value={form.gameThemeColor} onChange={(event) => updateField('gameThemeColor', event.target.value)} />
@@ -894,6 +974,52 @@ export default function GamePostWizard({ mode = 'create' }) {
                   </div>
                 )}
               />
+              <div className="admin-form-card">
+                <div className="admin-form-card__header">
+                  <h3 className="admin-form-card__title">SEO</h3>
+                  <p className="admin-form-card__description">Search engine meta fields for this game page.</p>
+                </div>
+                <div className="admin-form-grid cols-2">
+                  <Area
+                    label="Meta Description"
+                    value={form.metaDescription}
+                    onChange={e => updateField('metaDescription', e.target.value.slice(0, 160))}
+                    rows={3}
+                    placeholder={form.tagline}
+                    hint={`${(form.metaDescription || '').length}/160 characters`}
+                  />
+                  <Input
+                    label="Canonical URL"
+                    value={form.canonicalUrl}
+                    onChange={e => updateField('canonicalUrl', e.target.value)}
+                    placeholder={`/games/${form.slug}`}
+                    hint="Auto-populated from slug. Editable."
+                  />
+                </div>
+              </div>
+              <div className="admin-form-card">
+                <div className="admin-toggle-row">
+                  <div>
+                    <strong>Publish immediately</strong>
+                    <p>Turn off to schedule a future publish date and time.</p>
+                  </div>
+                  <label className="admin-checkbox-row">
+                    <input type="checkbox" checked={form.publishImmediately} onChange={e => updateField('publishImmediately', e.target.checked)} />
+                    <span>{form.publishImmediately ? 'On' : 'Off'}</span>
+                  </label>
+                </div>
+                {!form.publishImmediately && (
+                  <div style={{ marginTop: 12 }}>
+                    <Input
+                      label="Scheduled Publish Date & Time"
+                      type="datetime-local"
+                      value={form.scheduledPublishDate}
+                      onChange={e => updateField('scheduledPublishDate', e.target.value)}
+                      hint="Post will publish automatically at this date and time."
+                    />
+                  </div>
+                )}
+              </div>
             </AdminPanel>
           )}
 

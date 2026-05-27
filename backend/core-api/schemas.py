@@ -1,8 +1,8 @@
 """
 Pydantic schemas for validation and serialization
 """
-from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Optional, List, UUID4
+from pydantic import BaseModel, EmailStr, Field, validator, UUID4
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
@@ -424,3 +424,207 @@ class ApiResponse(BaseModel):
     message: str
     data: Optional[dict] = None
     errors: Optional[List[str]] = None
+
+
+# ================== TOURNAMENT SCHEMAS ==================
+
+class TournamentCreate(BaseModel):
+    title: str = Field(..., min_length=3, max_length=200)
+    slug: Optional[str] = None
+    game_slug: Optional[str] = None
+    domain: Optional[str] = "esports"
+    format: Optional[str] = None
+    status: Optional[str] = "upcoming"
+    prize_pool: Optional[str] = None
+    entry_fee: Optional[float] = 0
+    max_participants: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    registration_opens: Optional[datetime] = None
+    registration_closes: Optional[datetime] = None
+    eligible_regions: Optional[List[str]] = None
+    rules: Optional[str] = None
+    refund_policy: Optional[str] = None
+    banner_image: Optional[str] = None
+    game_config_json: Optional[dict] = None
+    highlights: Optional[List] = None
+    stages: Optional[List] = None
+    important_notes: Optional[str] = None
+    prize_distribution: Optional[List] = None
+    prize_distribution_policy: Optional[str] = None
+    bracket_announcement: Optional[datetime] = None
+    check_in_start: Optional[datetime] = None
+    check_in_end: Optional[datetime] = None
+    expected_duration: Optional[str] = None
+    organizer_user_id: Optional[UUID4] = None
+    full_rules_document: Optional[str] = None
+    custom_registration_fields: Optional[List] = None
+    platforms: Optional[List] = None
+    estimated_match_duration: Optional[str] = None
+    overtime_rules: Optional[str] = None
+    reschedule_policy: Optional[str] = None
+    noshow_rule: Optional[str] = None
+
+class TournamentUpdate(BaseModel):
+    title: Optional[str] = None
+    status: Optional[str] = None
+    prize_pool: Optional[str] = None
+    entry_fee: Optional[float] = None
+    max_participants: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    registration_opens: Optional[datetime] = None
+    registration_closes: Optional[datetime] = None
+    eligible_regions: Optional[List[str]] = None
+    rules: Optional[str] = None
+    refund_policy: Optional[str] = None
+    banner_image: Optional[str] = None
+    game_config_json: Optional[dict] = None
+    highlights: Optional[List] = None
+    stages: Optional[List] = None
+    important_notes: Optional[str] = None
+    prize_distribution: Optional[List] = None
+    prize_distribution_policy: Optional[str] = None
+    bracket_announcement: Optional[datetime] = None
+    check_in_start: Optional[datetime] = None
+    check_in_end: Optional[datetime] = None
+    expected_duration: Optional[str] = None
+    organizer_user_id: Optional[UUID4] = None
+    full_rules_document: Optional[str] = None
+    custom_registration_fields: Optional[List] = None
+    platforms: Optional[List] = None
+    estimated_match_duration: Optional[str] = None
+    overtime_rules: Optional[str] = None
+    reschedule_policy: Optional[str] = None
+    noshow_rule: Optional[str] = None
+
+class TournamentResponse(BaseModel):
+    id: UUID4
+    slug: str
+    title: str
+    game_slug: Optional[str]
+    domain: str
+    format: Optional[str]
+    status: str
+    prize_pool: Optional[str]
+    entry_fee: float
+    max_participants: Optional[int]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    registration_opens: Optional[datetime]
+    registration_closes: Optional[datetime]
+    eligible_regions: Optional[List] = None
+    rules: Optional[str] = None
+    refund_policy: Optional[str] = None
+    banner_image: Optional[str]
+    game_config_json: Optional[dict] = None
+    created_at: datetime
+    registration_count: Optional[int] = 0
+    highlights: Optional[List] = None
+    stages: Optional[List] = None
+    important_notes: Optional[str] = None
+    prize_distribution: Optional[List] = None
+    prize_distribution_policy: Optional[str] = None
+    bracket_announcement: Optional[datetime] = None
+    check_in_start: Optional[datetime] = None
+    check_in_end: Optional[datetime] = None
+    expected_duration: Optional[str] = None
+    organizer_user_id: Optional[UUID4] = None
+    full_rules_document: Optional[str] = None
+    custom_registration_fields: Optional[List] = None
+    platforms: Optional[List] = None
+    estimated_match_duration: Optional[str] = None
+    overtime_rules: Optional[str] = None
+    reschedule_policy: Optional[str] = None
+    noshow_rule: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class RegistrationCreate(BaseModel):
+    team_name: Optional[str] = None
+    team_members: Optional[List[str]] = None
+    game_fields: Optional[dict] = None
+
+class RegistrationResponse(BaseModel):
+    id: UUID4
+    tournament_id: UUID4
+    user_id: UUID4
+    team_name: Optional[str]
+    status: str
+    registered_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ================== SOCIAL POST SCHEMAS ==================
+
+class PostCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=5000)
+    sub_profile_type: Optional[str] = None
+    media_urls: Optional[List[str]] = None
+
+class PostResponse(BaseModel):
+    id: UUID4
+    user_id: UUID4
+    sub_profile_type: Optional[str]
+    content: str
+    media_urls: Optional[List[str]]
+    like_count: int
+    comment_count: int
+    created_at: datetime
+    liked_by_me: Optional[bool] = False
+
+    class Config:
+        from_attributes = True
+
+class PostCommentCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+    parent_comment_id: Optional[UUID4] = None
+
+class PostCommentResponse(BaseModel):
+    id: UUID4
+    post_id: UUID4
+    user_id: UUID4
+    content: str
+    parent_comment_id: Optional[UUID4]
+    like_count: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class FriendRequestResponse(BaseModel):
+    id: UUID4
+    from_user_id: UUID4
+    to_user_id: UUID4
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ================== UPDATED COMPANY SCHEMAS ==================
+
+class CompanyCreate(BaseModel):
+    slug: str = Field(..., min_length=2, max_length=120)
+    name: str = Field(..., min_length=2, max_length=200)
+    type: Optional[str] = None
+    description: Optional[str] = None
+    logo_url: Optional[str] = None
+    banner_url: Optional[str] = None
+    website: Optional[str] = None
+
+class CompanyUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    description: Optional[str] = None
+    logo_url: Optional[str] = None
+    banner_url: Optional[str] = None
+    website: Optional[str] = None
+
+class CompanyMemberAdd(BaseModel):
+    username: str
+    role: Optional[str] = "member"

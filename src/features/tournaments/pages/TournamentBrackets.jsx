@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiChevronLeft, FiGitBranch, FiUsers, FiAward, FiZap, FiTarget, FiCpu, FiActivity, FiTerminal, FiCheck } from 'react-icons/fi';
-import { MOCK_BRACKETS, MOCK_MATCHES } from '@/shared/data/tournamentData';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
+import { useTournament, useTournamentBracket } from '@/services/mutators/useTournaments';
 
 const MOCK_BRACKET = {
     rounds: [
@@ -37,10 +37,46 @@ export default function TournamentBrackets() {
     const { slug } = useParams();
     const navigate = useNavigate();
     usePageTheme('tournaments-page');
-    
+
+    const { data: tournament } = useTournament(slug);
+    const { data: bracketData, refetch: refetchBracket } = useTournamentBracket(slug);
+    const isLive = (tournament?.status || '').toLowerCase() === 'live';
+    const [flashedMatches, setFlashedMatches] = useState(new Set());
+    const prevBracketRef = useRef(null);
+
+    useEffect(() => {
+        if (!isLive) return;
+        const interval = setInterval(() => {
+            refetchBracket().then(({ data: fresh }) => {
+                if (!fresh || !prevBracketRef.current) { prevBracketRef.current = fresh; return; }
+                const changed = new Set();
+                const prevMatches = prevBracketRef.current?.rounds?.flatMap(r => r.matches) || [];
+                const freshMatches = fresh?.rounds?.flatMap(r => r.matches) || [];
+                freshMatches.forEach((m, i) => {
+                    const p = prevMatches[i];
+                    if (!p || JSON.stringify(m) !== JSON.stringify(p)) changed.add(m.id || i);
+                });
+                if (changed.size > 0) {
+                    setFlashedMatches(changed);
+                    setTimeout(() => setFlashedMatches(new Set()), 1000);
+                }
+                prevBracketRef.current = fresh;
+            });
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [isLive, refetchBracket]);
+
+    const displayBracket = bracketData?.rounds ? bracketData : MOCK_BRACKET;
+
     return (
         <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-body selection:bg-[var(--theme-primary)]/30 theme-tournaments pb-32">
-            <Helmet><title>Tournament Brackets | GzoneSphere</title></Helmet>
+            <Helmet>
+                <title>Tournament Brackets | GzoneSphere Competitive Hierarchy</title>
+                <meta name="description" content="Track live progress and match pairings in GzoneSphere tournament brackets. Visualize the road to the finals and monitor your favorite teams." />
+                <meta property="og:title" content="Tournament Brackets | GzoneSphere Competitive Hierarchy" />
+                <meta property="og:description" content="Live progress and match pairings for GzoneSphere competitive events." />
+                <link rel="canonical" href={window.location.href} />
+            </Helmet>
 
             {/* Cinematic Background Artifacts */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -85,10 +121,17 @@ export default function TournamentBrackets() {
                             <FiUsers className="text-[var(--theme-primary)] group-hover:rotate-12 transition-transform" />
                             <span className="text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)]">32 OPERATORS</span>
                         </div>
-                        <div className="px-10 py-5 bg-[var(--theme-primary)]/10 border-2 border-[var(--theme-primary)]/20 rounded-3xl flex items-center gap-4 italic shadow-2xl shadow-[var(--theme-primary)]/10">
-                            <FiZap className="text-[var(--theme-primary)] animate-pulse" />
-                            <span className="text-xs font-black uppercase tracking-widest text-[var(--theme-primary)]">LIVE_PROTOCOL</span>
-                        </div>
+                        {isLive ? (
+                            <div className="px-10 py-5 bg-red-600/10 border-2 border-red-500/30 rounded-3xl flex items-center gap-4 italic shadow-2xl shadow-red-600/10">
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block" />
+                                <span className="text-xs font-black uppercase tracking-widest text-red-400">LIVE · Updates every 15s</span>
+                            </div>
+                        ) : (
+                            <div className="px-10 py-5 bg-[var(--theme-primary)]/10 border-2 border-[var(--theme-primary)]/20 rounded-3xl flex items-center gap-4 italic shadow-2xl shadow-[var(--theme-primary)]/10">
+                                <FiZap className="text-[var(--theme-primary)] animate-pulse" />
+                                <span className="text-xs font-black uppercase tracking-widest text-[var(--theme-primary)]">LIVE_PROTOCOL</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
@@ -96,20 +139,20 @@ export default function TournamentBrackets() {
             {/* Bracket Area */}
             <main className="pt-24 pb-20 overflow-x-auto min-h-[80vh] flex items-start hide-scrollbar relative z-10">
                 <div className="flex gap-24 px-12 lg:px-32 min-w-max mx-auto h-[800px] items-center">
-                    {MOCK_BRACKET.rounds.map((round, rIndex) => (
+                    {displayBracket.rounds.map((round, rIndex) => (
                         <div key={round.title} className="flex flex-col gap-20 relative">
                             <div className="text-center space-y-4">
                                 <h3 className="text-sm font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic leading-none">{round.title}</h3>
                                 <div className="h-1 w-16 bg-[var(--theme-primary)]/20 mx-auto rounded-full" />
                             </div>
-                            
+
                             <div className={`flex flex-col justify-around h-full gap-16`}>
                                 {round.matches.map((match, mIndex) => (
                                     <div key={match.id} className="relative group">
-                                        <MatchNode match={match} />
+                                        <MatchNode match={match} isFlashing={flashedMatches.has(match.id || mIndex)} />
                                         
                                         {/* Dynamic Connectors (Forensic Lines) */}
-                                        {rIndex < MOCK_BRACKET.rounds.length - 1 && (
+                                        {rIndex < displayBracket.rounds.length - 1 && (
                                             <div 
                                                 className={`absolute left-[100%] top-1/2 w-24 flex items-center`}
                                                 style={{ height: 'calc(100% + 64px)' }}
@@ -160,11 +203,16 @@ export default function TournamentBrackets() {
     );
 }
 
-function MatchNode({ match }) {
+function MatchNode({ match, isFlashing }) {
     return (
-        <motion.div 
+        <motion.div
             whileHover={{ scale: 1.05, y: -5 }}
-            className="w-80 bg-[var(--theme-card)] border-2 border-[var(--theme-border)] rounded-3xl overflow-hidden shadow-2xl transition-all group-hover:border-[var(--theme-primary)]/40 group-hover:shadow-[var(--theme-primary)]/10 relative"
+            className="w-80 bg-[var(--theme-card)] border-2 rounded-3xl overflow-hidden shadow-2xl transition-all relative"
+            style={{
+                borderColor: isFlashing ? '#4ade80' : undefined,
+                boxShadow: isFlashing ? '0 0 20px rgba(74,222,128,0.35)' : undefined,
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+            }}
         >
             <div className="px-6 py-2.5 bg-[var(--theme-bg-alt)] border-b-2 border-dashed border-[var(--theme-border)] flex items-center justify-between">
                 <span className="text-xs font-black text-[var(--theme-text-muted)] tracking-wider italic uppercase opacity-40">{match.id}</span>

@@ -15,15 +15,14 @@ const TrustHistory = lazy(() => import('@/features/settings/pages/TrustHistory')
 const SettingsRoutes = () => (
   <>
     <Route element={<ProtectedRoute />}>
-      <Route path="/notifications"           element={<NotificationInbox />} />
-      <Route path="/settings"                element={<SettingsHome />} />
-      <Route path="/settings/account"        element={<AccountSettings />} />
-      <Route path="/settings/profile"        element={<ProfileSettings />} />
-      <Route path="/settings/security"       element={<SecurityPassword />} />
-      <Route path="/settings/privacy"        element={<PrivacyDefaults />} />
-      <Route path="/settings/linked"         element={<LinkedAccounts />} />
-      <Route path="/settings/notifications"  element={<NotificationSettings />} />
-      <Route path="/settings/trust"          element={<TrustHistory />} />
+      <Route path="/settings"                    element={<SettingsHome />} />
+      <Route path="/settings/account"            element={<AccountSettings />} />
+      <Route path="/settings/security"           element={<SecurityPassword />} />
+      <Route path="/settings/notifications"      element={<NotificationSettings />} />
+      <Route path="/settings/privacy"            element={<PrivacyDefaults />} />
+      <Route path="/settings/linked"             element={<LinkedAccounts />} />
+      <Route path="/settings/trust-history"      element={<TrustHistory />} />
+      <Route path="/notifications"               element={<NotificationInbox />} />
     </Route>
   </>
 );

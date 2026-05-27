@@ -1,7 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
-import { useAuth } from '@/app/providers/AuthProvider';
+import { useAuth } from '@/app/providers/useAuth';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 
 export default function BlogWriteGate() {
@@ -26,7 +26,7 @@ export default function BlogWriteGate() {
         />
       </Helmet>
 
-      <div className="page-container">
+      <div className="container-global">
         <div className="bl-gate__hero">
           <p className="bl-gate__eyebrow">Phase 1 Editorial Access</p>
           <h1 className="bl-gate__title">Writing is admin-managed right now</h1>

@@ -1,22 +1,109 @@
 import cms from '@/services/api/cms';
-import { CMS } from '@/services/api/endpoints';
+import core from '@/services/api/core';
+import { CMS, CORE } from '@/services/api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
+
+// After the CMS response interceptor runs, r.data is already the inner payload.
+// Core API responses are similarly unwrapped by the core client interceptor.
+// All .then(r => r.data) calls below receive the unwrapped value directly.
 
 const blogsService = {
-    getBlogs: async (params = {}) => cms.get(CMS.BLOGS.LIST, { params }),
+  // ── Public: Blog listings ──────────────────────────────────────────────────
 
-    getBlogBySlug: async (slug) => cms.get(CMS.BLOGS.BY_SLUG(slug)),
+  getBlogs: (params = {}) => safeApiCall(
+    () => cms.get(CMS.BLOGS.LIST, { params }).then(r => r.data ?? []),
+    () => mockApiService.getPublicBlogs()
+  ),
 
-    getFeaturedBlogs: async () => cms.get(CMS.BLOGS.FEATURED),
+  getFeaturedBlogs: () => safeApiCall(
+    () => cms.get(CMS.BLOGS.FEATURED).then(r => r.data ?? []),
+    () => mockApiService.getPublicBlogs(true)
+  ),
 
-    getCategories: async () => cms.get(CMS.BLOGS.CATEGORIES),
+  getMostReadBlogs: (params = {}) => safeApiCall(
+    () => cms.get(CMS.BLOGS.MOST_READ, { params }).then(r => r.data ?? []),
+    () => mockApiService.getPublicBlogs()
+  ),
 
-    likeBlog: async (slug) => cms.post(CMS.BLOGS.LIKE(slug)),
+  getTrendingBlogs: (params = {}) => safeApiCall(
+    () => cms.get(CMS.BLOGS.TRENDING, { params }).then(r => r.data ?? []),
+    () => mockApiService.getPublicBlogs()
+  ),
 
-    createBlog: async (blogData) => cms.post(CMS.BLOGS.CREATE, blogData),
+  getBlogBySlug: (slug) => safeApiCall(
+    () => cms.get(CMS.BLOGS.BY_SLUG(slug)).then(r => r.data),
+    () => mockApiService.getPublicBlogs().then(list =>
+      list.find(b => b.slug === slug || b.id === Number(slug))
+    )
+  ),
 
-    updateBlog: async (id, blogData) => cms.put(CMS.BLOGS.UPDATE(id), blogData),
+  getCategories: () => safeApiCall(
+    () => cms.get(CMS.BLOGS.CATEGORIES).then(r => r.data ?? []),
+    () => Promise.resolve(['Industry', 'Reviews', 'Technology', 'Tutorials'])
+  ),
 
-    deleteBlog: async (id) => cms.delete(CMS.BLOGS.DELETE(id)),
+  // ── Public: Blog interactions ──────────────────────────────────────────────
+
+  likeBlog: (slug) => safeApiCall(
+    () => cms.post(CMS.BLOGS.LIKE(slug)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
+
+  // ── Public: Comments ───────────────────────────────────────────────────────
+
+  getComments: (slug, params = {}) => safeApiCall(
+    () => cms.get(CMS.BLOGS.COMMENTS(slug), { params }).then(r => r.data ?? { data: [], meta: { total: 0, has_more: false } }),
+    () => Promise.resolve({ data: [], meta: { total: 0, has_more: false } })
+  ),
+
+  createComment: (slug, data) => safeApiCall(
+    () => cms.post(CMS.BLOGS.COMMENTS(slug), data).then(r => r.data),
+    () => Promise.resolve({ id: Date.now().toString(), ...data, like_count: 0, replies: [] })
+  ),
+
+  likeComment: (slug, commentId) => safeApiCall(
+    () => cms.post(CMS.BLOGS.COMMENT_LIKE(slug, commentId)).then(r => r.data),
+    () => Promise.resolve({ like_count: 1 })
+  ),
+
+  reportComment: (slug, commentId, reason) => safeApiCall(
+    () => cms.post(CMS.BLOGS.COMMENT_REPORT(slug, commentId), { reason }).then(r => r.data),
+    () => Promise.resolve({ reported: true })
+  ),
+
+  // ── Admin: Blog management ─────────────────────────────────────────────────
+
+  createBlog: (blogData) => safeApiCall(
+    () => cms.post(CMS.BLOGS.CREATE, blogData).then(r => r.data),
+    () => mockApiService.addBlog(blogData)
+  ),
+
+  updateBlog: (id, blogData) => safeApiCall(
+    () => cms.patch(CMS.BLOGS.UPDATE(id), blogData).then(r => r.data),
+    () => mockApiService.updateBlog(id, blogData)
+  ),
+
+  deleteBlog: (id) => safeApiCall(
+    () => cms.delete(CMS.BLOGS.DELETE(id)).then(r => r.data),
+    () => mockApiService.deleteBlog(id)
+  ),
+
+  // ── Reading List (core-api) ────────────────────────────────────────────────
+
+  getReadingList: () => safeApiCall(
+    () => core.get(CORE.READING_LIST.GET).then(r => r.data ?? { items: [] }),
+    () => Promise.resolve({ items: [] })
+  ),
+
+  saveToReadingList: (slug) => safeApiCall(
+    () => core.post(CORE.READING_LIST.SAVE(slug)).then(r => r.data),
+    () => Promise.resolve({ saved: true })
+  ),
+
+  removeFromReadingList: (slug) => safeApiCall(
+    () => core.delete(CORE.READING_LIST.UNSAVE(slug)).then(r => r.data),
+    () => Promise.resolve({ saved: false })
+  ),
 };
 
 export default blogsService;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
     FiGitBranch, FiCheck, FiEdit2, FiAlertCircle, FiArrowLeft, FiRefreshCw, 
     FiTerminal, FiActivity, FiGlobe, FiLayers, FiHash, FiZap, FiCpu, FiGrid
@@ -14,7 +14,6 @@ const STATUS_BADGE = {
 };
 
 export default function TournamentBrackets() {
-    const { id } = useParams();
     const navigate = useNavigate();
     const [matches, setMatches] = useState(MOCK_MATCHES || []);
     const [editingMatch, setEditingMatch] = useState(null);

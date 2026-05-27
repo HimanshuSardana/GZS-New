@@ -17,7 +17,7 @@ export default function Home() {
   usePageTheme('home');
   return (
     <Suspense fallback={<div className="min-h-screen bg-white" />}>
-    <div className="min-h-screen bg-white font-body overflow-x-hidden">
+    <div className="theme-home min-h-screen bg-[var(--theme-bg)] font-body overflow-x-hidden">
       <Helmet>
         <title>GzoneSphere | The Future of Gaming, Unified</title>
         <meta name="description" content="GzoneSphere is where gamers, creators, and companies meet — to compete, build, and grow together." />

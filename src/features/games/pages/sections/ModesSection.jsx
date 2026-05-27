@@ -1,62 +1,42 @@
-export default function ModesSection({ modes }) {
+﻿export default function ModesSection({ modes }) {
     // Duplicate modes array to ensure seamless infinite looping with CSS translateX(-50%)
-    const carouselItems = modes ? [...modes, ...modes, ...modes] : [];
+    const carouselItems = modes ? [...modes, ...modes] : [];
 
     return (
-        <section className="w-full section-padding overflow-hidden relative">
+        <section className="gp-content-section overflow-hidden relative">
 
-            <div className="container-global text-center mb-16 gp-animate-in">
+            <div className="text-center mb-16 gp-animate-in">
                 <span className="gp-section-label flex items-center justify-center gap-3">
-                    <span className="w-6 h-[2px] bg-[var(--gp-primary)]"></span>
                     CHOOSE YOUR PATH
-                    <span className="w-6 h-[2px] bg-[var(--gp-primary)]"></span>
                 </span>
-                <h2 className="gp-hero-title text-6xl md:text-7xl text-[var(--theme-text)]">
+                <h2 className="gp-section-heading !border-b-0 mx-auto max-w-max">
                     GAME MODES
                 </h2>
+                <div className="w-24 h-1 bg-[var(--gp-primary)] mx-auto -mt-2"></div>
             </div>
 
-            <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[var(--gp-bg-page)] to-transparent z-10 pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-[var(--gp-bg-page)] to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-[var(--theme-bg)] to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-[var(--theme-bg)] to-transparent z-10 pointer-events-none" />
 
             <div className="flex gap-8 items-stretch animate-continuous-scroll w-max hover:pause px-4 pb-8">
                 {carouselItems.map((m, i) => (
                     <div
                         key={i}
-                        className="w-[300px] md:w-[350px] shrink-0 bg-white/80 backdrop-blur-md border border-[var(--gp-border)]
-                       rounded-2xl p-10 text-center cursor-pointer group relative overflow-hidden transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1"
+                        className="gp-card w-[300px] md:w-[350px] shrink-0 text-center cursor-pointer group relative overflow-hidden"
                     >
-                        {/* Background glow on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--gp-primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                        {/* Top decorative line */}
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--gp-primary)] to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-
-                        {/* Diamond icon with hover effect */}
-                        <div
-                            className="w-16 h-16 mx-auto mb-8 rotate-45 rounded-xl
-                         border-2 border-[var(--gp-primary)] flex items-center justify-center transition-all duration-500 group-hover:bg-[var(--gp-primary)] group-hover:shadow-[0_0_15px_var(--gp-primary-alpha)] group-hover:rotate-[225deg]"
-                        >
-                            <div className="w-5 h-5 bg-[var(--gp-primary)] -rotate-45 group-hover:bg-white transition-colors duration-500" />
+                        <div className="w-16 h-16 mx-auto mb-8 bg-[var(--theme-bg-section)] rounded-2xl flex items-center justify-center transition-all duration-[var(--transition-normal, 300ms)] group-hover:bg-[var(--gp-primary)] group-hover:scale-110">
+                            <div className="w-6 h-6 border-2 border-[var(--gp-primary)] rounded-md group-hover:border-[var(--theme-text-inverse)] transition-colors duration-[var(--transition-normal, 300ms)]" />
                         </div>
 
-                        <h3 className="gp-hero-title text-2xl mb-4 text-[var(--theme-text)] group-hover:text-[var(--gp-primaryDark)] transition-colors relative z-10">
+                        <h3 className="gp-hero-title text-[20px] mb-4 text-[var(--theme-text)] group-hover:text-[var(--gp-primary)] transition-colors relative z-10 uppercase tracking-tight">
                             {m.mode_title}
                         </h3>
-                        <p className="gzs-body text-[var(--theme-text)]/70 text-base font-bold leading-relaxed relative z-10 group-hover:text-[var(--theme-text)] transition-colors">
+                        <p className="gzs-body text-[var(--theme-text-muted)] text-[14px] leading-relaxed relative z-10">
                             {m.mode_desc || "Engage in this exciting game mode and prove your skills on the battlefield."}
                         </p>
                     </div>
                 ))}
             </div>
-
-            {/* Adding an inverse scroll for a second row if modes are many, but sticking to one row for simplicity */}
         </section>
     );
 }
-
-
-
-
-
-

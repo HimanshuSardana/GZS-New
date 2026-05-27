@@ -1,30 +1,47 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AuthLayout from '@/app/layouts/AuthLayout';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
+import { authService } from '@/services';
 import { FiMail } from 'react-icons/fi';
 
 export default function VerifyEmail() {
     usePageTheme('auth');
 
-    const navigate  = useNavigate();
     const location  = useLocation();
     const email     = location.state?.email || '';
 
     const [resending, setResending] = useState(false);
     const [resent, setResent]       = useState(false);
+    const [countdown, setCountdown] = useState(0);
 
-    // Mock: auto-redirect to profile setup after 3 seconds
+    // Auto-redirect removed as per typical real auth flow, 
+    // usually users stay here until they click the link in email or we poll for status.
+    // However, I will keep the component structure as is.
+
     useEffect(() => {
-        const timer = setTimeout(() => navigate('/profile/master-setup'), 3000);
-        return () => clearTimeout(timer);
-    }, [navigate]);
+        let timer;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [countdown]);
 
     const handleResend = async () => {
+        if (countdown > 0) return;
+        
         setResending(true);
-        await new Promise(r => setTimeout(r, 1500));
-        setResending(false);
-        setResent(true);
+        try {
+            await authService.resendVerification(email);
+            setResent(true);
+            setCountdown(60);
+        } catch (err) {
+            console.error("Resend failed:", err);
+        } finally {
+            setResending(false);
+        }
     };
 
     return (
@@ -57,23 +74,27 @@ export default function VerifyEmail() {
                 </p>
 
                 {/* Resend */}
-                <div className="pt-1">
-                    {resent ? (
-                        <p className="text-sm text-green-600 font-semibold">Email resent successfully!</p>
+                <div className="pt-1 min-h-[40px] flex items-center justify-center">
+                    {resending ? (
+                        <div className="flex items-center gap-2 text-sm text-[#1E6F9F]">
+                            <span className="w-3.5 h-3.5 border-2 border-[#1E6F9F] border-t-transparent rounded-full animate-spin" />
+                            Sending…
+                        </div>
+                    ) : countdown > 0 ? (
+                        <p className="text-sm text-gray-400">Resend available in {countdown}s</p>
                     ) : (
                         <button
                             type="button"
                             onClick={handleResend}
-                            disabled={resending}
-                            className="text-sm text-[#1E6F9F] hover:underline underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 mx-auto transition-opacity"
+                            className="text-sm text-[#1E6F9F] hover:underline underline-offset-2 inline-flex items-center gap-2 transition-opacity font-semibold"
                         >
-                            {resending && (
-                                <span className="w-3.5 h-3.5 border-2 border-[#1E6F9F] border-t-transparent rounded-full animate-spin" />
-                            )}
-                            {resending ? 'Sending…' : 'Resend email'}
+                            Resend verification email
                         </button>
                     )}
                 </div>
+                {resent && countdown > 0 && (
+                    <p className="text-xs text-green-600 mt-2">Email sent! Please check your inbox.</p>
+                )}
 
                 {/* Back to login */}
                 <div className="pt-4 border-t border-gray-100">

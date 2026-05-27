@@ -98,7 +98,7 @@
   }
   .admin-upload-zone:hover {
     border-color: var(--theme-primary);
-    background-color: #fff7ed;
+    background-color: var(--orange-50);
   }
   .admin-upload-zone-text {
     font-size: 13px;
@@ -410,6 +410,117 @@
     gap: var(--space-3);
     padding-top: var(--space-4);
     border-top: 1px solid var(--theme-border);
+  }
+
+  /* ── Related-game search ───────────────────────────────────── */
+
+  .admin-search-input {
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    background: var(--theme-bg-alt);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--radius-md);
+    color: var(--theme-text);
+    font-size: 0.8125rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .admin-search-input:focus {
+    border-color: var(--theme-primary);
+  }
+
+  .admin-search-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .admin-search-result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--theme-text);
+    font-size: 0.8125rem;
+    transition: background 0.12s;
+  }
+
+  .admin-search-result:hover {
+    background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  }
+
+  .admin-search-result img {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--theme-border);
+    flex-shrink: 0;
+  }
+
+  .admin-search-empty {
+    padding: var(--space-3);
+    font-size: 0.8rem;
+    color: var(--theme-text-muted);
+    text-align: center;
+  }
+
+  /* ── Related-game selected chips ───────────────────────────── */
+
+  .admin-related-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    background: var(--theme-bg-alt);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    color: var(--theme-text-secondary);
+  }
+
+  .admin-related-chip img {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .admin-related-chip button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--theme-text-muted);
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0;
+    border-radius: 50%;
+    transition: color 0.12s, background 0.12s;
+  }
+
+  .admin-related-chip button:hover {
+    color: var(--theme-danger, #ef4444);
+    background: color-mix(in srgb, var(--theme-danger, #ef4444) 10%, transparent);
   }
 
   @media (max-width: 1100px) {

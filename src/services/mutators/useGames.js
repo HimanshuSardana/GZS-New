@@ -14,6 +14,15 @@ export const useGameBySlug = (slug) =>
         enabled: !!slug,
     });
 
+// Full structured GamePost (hits /gameposts/:slug → gamepost schema)
+export const useGamePost = (slug) =>
+    useQuery({
+        queryKey: ['gamepost', slug],
+        queryFn: () => gamesService.getGamePost(slug),
+        enabled: !!slug,
+        staleTime: 1000 * 60 * 5, // 5 min cache
+    });
+
 export const useTrendingGames = () =>
     useQuery({
         queryKey: ['games', 'trending'],
@@ -43,26 +52,21 @@ export const useCreateGame = () => {
     });
 };
 
-export const useUpdateGame = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, data }) => gamesService.updateGame(id, data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['game', variables.id] });
-            queryClient.invalidateQueries({ queryKey: ['games'] });
-        },
-    });
-};
+export function useUpdateGame() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }) => gamesService.updateGame(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['games'] }),
+  });
+}
 
-export const useDeleteGame = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: gamesService.deleteGame,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['games'] });
-        },
-    });
-};
+export function useDeleteGame() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => gamesService.deleteGame(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['games'] }),
+  });
+}
 
 export const useUploadGameMedia = () => {
     const queryClient = useQueryClient();
@@ -75,5 +79,34 @@ export const useUploadGameMedia = () => {
     });
 };
 
+export function useUpdateGamePost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) =>
+      gamesService.updateGamePost(id, data).then(r => r.data ?? r),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gameposts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-gameposts'] });
+    },
+  });
+}
+
+export const useUserReviews = (slug, params = {}) =>
+  useQuery({
+    queryKey: ['user-reviews', slug, params],
+    queryFn: () => gamesService.getUserReviews(slug, params),
+    enabled: !!slug,
+  });
+
+export const useSubmitUserReview = (slug) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => gamesService.submitUserReview(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-reviews', slug] });
+    },
+  });
+};
+
 export const useGames = useGamesList;
-export const useGame = useGameBySlug;
+export const useGame = useGamePost; // GamePostPage uses useGame — now points to structured endpoint

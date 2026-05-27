@@ -1,9 +1,27 @@
 :root {
-  --domain-dev:      #00B4A6;
-  --domain-esports:  #EF4444;
-  --domain-content:  #F59E0B;
-  --domain-business: #3B82F6;
-  --domain-art:      #EC4899;
-  --domain-writing:  #22C55E;
-  --domain-audio:    #6B7280;
+  --domain-dev:       #00e5a0;
+  --domain-esports:   #ff4d6d;
+  --domain-content:   #ff9f2e;
+  --domain-business:  #3b9eff;
+  --domain-art:       #ff6eb4;
+  --domain-writing:   #4ade80;
+  --domain-audio:     #a78bfa;
+  --domain-general:   #818cf8;
+  --domain-newcomers: #34d399;
+
+  --domain-dev-bg:        rgba(0, 229, 160, 0.12);
+  --domain-esports-bg:    rgba(255, 77, 109, 0.12);
+  --domain-content-bg:    rgba(255, 159, 46, 0.12);
+  --domain-business-bg:   rgba(59, 158, 255, 0.12);
+  --domain-art-bg:        rgba(255, 110, 180, 0.12);
+  --domain-writing-bg:    rgba(74, 222, 128, 0.12);
+  --domain-audio-bg:      rgba(167, 139, 250, 0.12);
+  --domain-general-bg:    rgba(129, 140, 248, 0.12);
+  --domain-newcomers-bg:  rgba(52, 211, 153, 0.12);
+
+  /* ── Auth layout accent ────────────────────────────────────── */
+  /* Steel-blue used for check-icon and its badge on the auth right panel.     */
+  /* No existing domain or slate color matches #1E6F9F closely enough to reuse.*/
+  --color-border-auth:     #1E6F9F;
+  --color-border-auth-rgb: 30, 111, 159;   /* for color-mix() / rgba() variants */
 }

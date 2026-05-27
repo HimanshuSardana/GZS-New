@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 export default function FinalCTASection() {
   return (
     <section className="section-dark">
-      <div className="section-container text-center">
+      <div className="container-global text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
           <h2
             className="text-white mb-4 uppercase"
@@ -19,7 +19,7 @@ export default function FinalCTASection() {
             Your gaming universe starts here.
           </h2>
 
-          <p className="text-lg mb-10 mx-auto max-w-[56ch]" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.65 }}>
+          <p className="text-lg mb-10 mx-auto max-w-[56ch] text-[var(--theme-text-inverse)]/65 leading-relaxed">
             Whether you play, create, build, or compete — GzoneSphere is the platform gaming has always deserved.
           </p>
 
@@ -32,7 +32,7 @@ export default function FinalCTASection() {
             </Link>
           </div>
 
-          <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm mb-8 text-[var(--theme-text-inverse)]/40">
             Join 142,000+ members already building their gaming identity.
           </p>
 
@@ -40,15 +40,13 @@ export default function FinalCTASection() {
             {['Discord for community', 'LinkedIn for careers', 'Steam for games'].map(s => (
               <span
                 key={s}
-                className="text-xs px-3 py-1.5 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}
+                className="text-xs px-3 py-1.5 rounded-full bg-[var(--theme-bg-dark)]/10 border border-[var(--theme-border)]/20 text-[var(--theme-text-inverse)]/40"
               >
                 {s}
               </span>
             ))}
             <span
-              className="text-xs px-3 py-1.5 rounded-full font-semibold"
-              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)' }}
+              className="text-xs px-3 py-1.5 rounded-full font-semibold bg-[var(--theme-bg-dark)]/20 border border-[var(--theme-border)]/40 text-[var(--theme-text-inverse)]/80"
             >
               All of it. One platform.
             </span>

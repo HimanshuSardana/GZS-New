@@ -79,6 +79,41 @@ export const useDeleteTournament = () => {
     });
 };
 
+export const useTournamentRegistrations = (id) =>
+    useQuery({
+        queryKey: ['tournament', id, 'registrations'],
+        queryFn: () => tournamentService.getRegistrations(id),
+        enabled: !!id,
+    });
+
+export const useTournamentAnalyticsFunnel = (id) =>
+    useQuery({
+        queryKey: ['tournament', id, 'analytics', 'funnel'],
+        queryFn: () => tournamentService.getAnalyticsFunnel(id),
+        enabled: !!id,
+    });
+
+export const useTournamentAnalyticsOverTime = (id) =>
+    useQuery({
+        queryKey: ['tournament', id, 'analytics', 'over-time'],
+        queryFn: () => tournamentService.getAnalyticsOverTime(id),
+        enabled: !!id,
+    });
+
+export const useTournamentAnalyticsGeo = (id) =>
+    useQuery({
+        queryKey: ['tournament', id, 'analytics', 'geo'],
+        queryFn: () => tournamentService.getAnalyticsGeo(id),
+        enabled: !!id,
+    });
+
+export const useTournamentAnalyticsPrizeStatus = (id) =>
+    useQuery({
+        queryKey: ['tournament', id, 'analytics', 'prize-status'],
+        queryFn: () => tournamentService.getAnalyticsPrizeStatus(id),
+        enabled: !!id,
+    });
+
 export const useTournaments = useTournamentsList;
 export const usePublicTournaments = useTournamentsList;
 export const useTournament = useTournamentBySlug;

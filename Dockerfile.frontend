@@ -1,0 +1,40 @@
+# ── Stage 1: Build ──────────────────────────────────────────────────────────
+# node:20-alpine matches the minimum Node version required by Vite 7.x.
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install deps before copying source so this layer is cached on code-only changes.
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Build-time env vars baked into the JS bundle by Vite.
+# Defaults route both APIs through the nginx reverse proxy so no absolute URL
+# is needed inside the Docker network.
+ARG VITE_CORE_API_URL=/api/core
+ARG VITE_CMS_API_URL=/api/cms
+ARG VITE_USE_MOCK=false
+ARG VITE_REAL_AUTH=true
+
+# Expose ARGs as ENV so `npm run build` (Vite) picks them up.
+ENV VITE_CORE_API_URL=$VITE_CORE_API_URL \
+    VITE_CMS_API_URL=$VITE_CMS_API_URL \
+    VITE_USE_MOCK=$VITE_USE_MOCK \
+    VITE_REAL_AUTH=$VITE_REAL_AUTH
+
+RUN npm run build
+
+# ── Stage 2: Serve ───────────────────────────────────────────────────────────
+FROM nginx:alpine AS runner
+
+# Remove the default nginx config.
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

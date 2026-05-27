@@ -1,0 +1,379 @@
+/* ==========================================================
+   GzoneSphere — ADMIN PANEL CSS OVERRIDES
+   File: src/styles/admin/admin-overrides.css
+   Import this in src/styles/admin.css AFTER the existing admin files.
+
+   The admin panel uses theme-admin which sets:
+     - dark sidebar (--admin-sidebar-bg: #0F172A)
+     - white content area cards
+     - GZS Blue as primary accent
+
+   This file ensures ALL admin components look correct
+   against that white/light-slate content background.
+   ========================================================== */
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE LAYOUT
+───────────────────────────────────────────────────────────── */
+
+.theme-admin .admin-layout {
+  background: var(--slate-100, #F1F5F9);
+  min-height: 100dvh;
+}
+
+/* Sidebar — dark */
+.theme-admin .admin-sidebar {
+  background: var(--slate-900, #0F172A);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+}
+
+/* Sidebar nav items */
+.theme-admin .admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--slate-400, #94A3B8);
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.theme-admin .admin-sidebar-link:hover {
+  background: rgba(255,255,255,0.06);
+  color: #FFFFFF;
+}
+
+.theme-admin .admin-sidebar-link.active {
+  background: rgba(29,106,219,0.15);
+  color: var(--gzs-blue, #1D6ADB);
+  font-weight: 600;
+}
+
+.theme-admin .admin-sidebar-link.active svg {
+  color: var(--gzs-blue, #1D6ADB);
+}
+
+/* Sidebar section labels */
+.theme-admin .admin-sidebar-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--slate-600, #475569);
+  padding: 0.5rem 0.875rem 0.25rem;
+}
+
+/* Navbar — white */
+.theme-admin .admin-navbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--slate-200, #E2E8F0);
+  box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+}
+
+/* Content area */
+.theme-admin .admin-content {
+  background: var(--slate-100, #F1F5F9);
+  padding: 1.5rem;
+}
+
+/* Admin content panels (white boxes) */
+.theme-admin .admin-panel {
+  background: #FFFFFF;
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.theme-admin .admin-panel-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--slate-200, #E2E8F0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-admin .admin-panel-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--slate-900, #0F172A);
+}
+
+.theme-admin .admin-panel-body {
+  padding: 1.5rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STAT CARDS (Dashboard hero row)
+───────────────────────────────────────────────────────────── */
+
+.admin-stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-left: 4px solid var(--theme-primary, #1D6ADB);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: box-shadow 0.2s;
+}
+
+.admin-stat-card:hover {
+  box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+}
+
+.admin-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-500, #64748B);
+}
+
+.admin-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--slate-900, #0F172A);
+  line-height: 1.1;
+}
+
+.admin-stat-delta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--slate-500, #64748B);
+  margin-top: 0.125rem;
+}
+
+.admin-stat-delta.positive { color: var(--status-success-text, #15803D); }
+.admin-stat-delta.negative { color: var(--status-error-text,   #B91C1C); }
+
+/* Color variants for left border */
+.admin-stat-card--success { border-left-color: var(--status-success, #16A34A); }
+.admin-stat-card--warning { border-left-color: var(--status-warning, #D97706); }
+.admin-stat-card--error   { border-left-color: var(--status-error,   #DC2626); }
+.admin-stat-card--info    { border-left-color: var(--status-info,    #2563EB); }
+
+/* ─────────────────────────────────────────────────────────────
+   TABLES
+───────────────────────────────────────────────────────────── */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: #FFFFFF;
+}
+
+.admin-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slate-500, #64748B);
+  background: var(--slate-50, #F8FAFC);
+  border-bottom: 1px solid var(--slate-200, #E2E8F0);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.875rem 1rem;
+  color: var(--slate-700, #334155);
+  border-bottom: 1px solid var(--slate-100, #F1F5F9);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: var(--slate-50, #F8FAFC);
+}
+
+/* Row for clickable items */
+.admin-table tr.clickable {
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FORMS
+───────────────────────────────────────────────────────────── */
+
+/* Override the dark-UI inputs for admin context (which is light) */
+.theme-admin .admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1.25rem;
+}
+
+.theme-admin .admin-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--slate-700, #334155);
+  letter-spacing: 0.01em;
+}
+
+.theme-admin .admin-input,
+.theme-admin input[type="text"],
+.theme-admin input[type="email"],
+.theme-admin input[type="number"],
+.theme-admin input[type="url"],
+.theme-admin input[type="password"],
+.theme-admin textarea,
+.theme-admin select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: #FFFFFF;
+  color: var(--slate-900, #0F172A);
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.875rem;
+  border: 1.5px solid var(--slate-300, #CBD5E1);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.theme-admin .admin-input::placeholder,
+.theme-admin textarea::placeholder {
+  color: var(--slate-400, #94A3B8);
+}
+
+.theme-admin .admin-input:focus,
+.theme-admin input:focus,
+.theme-admin textarea:focus,
+.theme-admin select:focus {
+  border-color: var(--gzs-blue, #1D6ADB);
+  box-shadow: 0 0 0 3px rgba(29,106,219,0.12);
+}
+
+.theme-admin .admin-input:disabled,
+.theme-admin input:disabled {
+  background: var(--slate-100, #F1F5F9);
+  color: var(--slate-400, #94A3B8);
+  cursor: not-allowed;
+}
+
+.theme-admin textarea {
+  resize: vertical;
+  min-height: 5rem;
+  line-height: 1.65;
+}
+
+/* Form hint */
+.admin-hint {
+  font-size: 0.75rem;
+  color: var(--slate-500, #64748B);
+  margin-top: 0.25rem;
+}
+
+/* Form error */
+.admin-error {
+  font-size: 0.75rem;
+  color: var(--status-error, #DC2626);
+  margin-top: 0.25rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ADMIN BUTTONS (override for admin context)
+───────────────────────────────────────────────────────────── */
+
+/* All admin buttons use base btn-* classes from utilities.css.
+   These overrides only fix admin-specific contexts. */
+
+/* Inline table action buttons */
+.admin-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.3125rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid var(--slate-200, #E2E8F0);
+  background: #FFFFFF;
+  color: var(--slate-700, #334155);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+
+  &:hover { border-color: var(--gzs-blue, #1D6ADB); color: var(--gzs-blue, #1D6ADB); background: var(--gzs-blue-50, #EFF6FF); }
+}
+
+.admin-btn-action--danger {
+  &:hover { border-color: var(--status-error, #DC2626); color: var(--status-error, #DC2626); background: #FEF2F2; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   QUEUE / LIST ITEMS
+───────────────────────────────────────────────────────────── */
+
+.admin-queue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--slate-100, #F1F5F9);
+  transition: background 0.12s;
+}
+
+.admin-queue-item:last-child { border-bottom: none; }
+.admin-queue-item:hover { background: var(--slate-50, #F8FAFC); }
+
+.admin-queue-item-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--slate-800, #1E293B);
+}
+
+.admin-queue-item-meta {
+  font-size: 0.75rem;
+  color: var(--slate-500, #64748B);
+  margin-top: 0.125rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HEALTH / STATUS INDICATORS
+───────────────────────────────────────────────────────────── */
+
+.health-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--slate-100, #F1F5F9);
+  font-size: 0.875rem;
+}
+
+.health-row:last-child { border-bottom: none; }
+
+.health-dot {
+  display: inline-flex;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.health-dot--healthy { background: var(--status-success, #16A34A); box-shadow: 0 0 6px rgba(22,163,74,0.5); }
+.health-dot--warning { background: var(--status-warning, #D97706); }
+.health-dot--error   { background: var(--status-error,   #DC2626); }
+
+.health-latency {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--status-success-text, #15803D);
+  background: var(--status-success-bg, #F0FDF4);
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+}

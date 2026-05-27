@@ -12,33 +12,32 @@ export default function GameCard({ game, onClick }) {
   const score = game.aggregate_score || game.metacritic || null;
 
   const inner = (
-    <div className="group relative bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-[var(--theme-primary)] cursor-pointer flex flex-col h-full">
+    <div className="group relative bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-[var(--theme-primary)] cursor-pointer flex flex-col h-full">
 
-      {/* Cover — aspect-video */}
-      <div className="aspect-video relative overflow-hidden bg-[#F1F5F9] shrink-0">
-        {game.banner_url ? (
+      {/* Cover — aspect-3/4 */}
+      <div style={{ aspectRatio: '3/4', width: '100%', overflow: 'hidden', position: 'relative' }} className="bg-[var(--theme-bg-section)] shrink-0">
+        {game.banner_url || game.cover_url ? (
           <img
-            src={game.banner_url}
+            src={game.banner_url || game.cover_url}
             alt={game.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="group-hover:scale-110 transition-transform duration-700"
             loading="lazy"
             decoding="async"
           />
         ) : (
           <div
-            className="w-full h-full flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, rgba(29,106,219,0.12), rgba(124,58,237,0.12))' }}
+            className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--theme-primary)]/10 to-[var(--theme-secondary)]/10"
           >
-            <span className="text-4xl">🎮</span>
+            <span className="text-4xl grayscale opacity-20">🎮</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
         {/* Genre badge */}
         {genres[0] && (
           <span
-            className="absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full text-white"
-            style={{ background: 'var(--theme-primary)' }}
+            className="absolute top-4 left-4 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg text-white bg-[var(--theme-primary)] shadow-lg italic"
           >
             {genres[0]}
           </span>
@@ -46,23 +45,22 @@ export default function GameCard({ game, onClick }) {
 
         {/* Score badge */}
         {score && (
-          <span className="absolute bottom-3 right-3 flex items-center gap-1 text-xs font-bold text-white bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
-            <FiStar size={10} />
-            {score}/10
-          </span>
+          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-[10px] font-black text-white bg-black/60 px-3 py-1 rounded-lg backdrop-blur-md border border-white/10 italic">
+            <FiStar size={10} className="text-yellow-400 fill-yellow-400" />
+            {score}
+          </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-1">
+      <div className="p-6 flex flex-col flex-1">
         {/* Platform icons row */}
         {platforms.length > 0 && (
-          <div className="flex gap-1 flex-wrap mb-2">
+          <div className="flex gap-2 flex-wrap mb-4">
             {platforms.map(p => (
               <span
                 key={p}
-                className="text-xs px-2 py-0.5 rounded font-medium"
-                style={{ background: '#F1F5F9', color: '#64748B' }}
+                className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[var(--theme-bg-alt)] border border-[var(--theme-border)] text-[var(--theme-text-muted)] italic"
               >
                 {p}
               </span>
@@ -71,15 +69,14 @@ export default function GameCard({ game, onClick }) {
         )}
 
         <h3
-          className="text-sm font-bold mb-1 line-clamp-1 group-hover:text-[var(--theme-primary)] transition-colors"
-          style={{ color: '#0F172A' }}
+          className="text-base font-black uppercase tracking-tight mb-2 line-clamp-1 group-hover:text-[var(--theme-primary)] transition-colors italic text-[var(--theme-text)]"
         >
           {game.title}
         </h3>
 
-        {(game.short_description || game.description) && (
-          <p className="text-xs leading-relaxed line-clamp-2 flex-1" style={{ color: '#64748B' }}>
-            {game.short_description || game.description}
+        {(game.short_description || game.description || game.tagline) && (
+          <p className="text-xs font-medium leading-relaxed line-clamp-2 flex-1 text-[var(--theme-text-muted)] italic opacity-60">
+            {game.short_description || game.description || game.tagline}
           </p>
         )}
       </div>

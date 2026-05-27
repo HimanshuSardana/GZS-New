@@ -67,5 +67,74 @@ export const useDeleteBlog = () => {
     });
 };
 
+export const useMostReadBlogs = (params = {}) =>
+    useQuery({
+        queryKey: ['blogs', 'most-read', params],
+        queryFn: () => blogsService.getMostReadBlogs(params),
+        staleTime: 1000 * 60 * 5,
+    });
+
+export const useTrendingBlogs = (params = {}) =>
+    useQuery({
+        queryKey: ['blogs', 'trending', params],
+        queryFn: () => blogsService.getTrendingBlogs(params),
+        staleTime: 1000 * 60 * 2,
+    });
+
+export const useBlogComments = (slug, params = {}) =>
+    useQuery({
+        queryKey: ['blog-comments', slug, params],
+        queryFn: () => blogsService.getComments(slug, params),
+        enabled: !!slug,
+    });
+
+export const useCreateComment = (slug) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data) => blogsService.createComment(slug, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['blog-comments', slug] });
+        },
+    });
+};
+
+export const useLikeComment = (slug) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (commentId) => blogsService.likeComment(slug, commentId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['blog-comments', slug] });
+        },
+    });
+};
+
+export const useReportComment = (slug) =>
+    useMutation({
+        mutationFn: ({ commentId, reason }) => blogsService.reportComment(slug, commentId, reason),
+    });
+
+export const useReadingList = () =>
+    useQuery({
+        queryKey: ['reading-list'],
+        queryFn: () => blogsService.getReadingList(),
+        staleTime: 1000 * 60 * 5,
+    });
+
+export const useSaveToReadingList = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (slug) => blogsService.saveToReadingList(slug),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reading-list'] }),
+    });
+};
+
+export const useRemoveFromReadingList = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (slug) => blogsService.removeFromReadingList(slug),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reading-list'] }),
+    });
+};
+
 export const useBlogs = useBlogsList;
 export const useBlog = useBlogBySlug;

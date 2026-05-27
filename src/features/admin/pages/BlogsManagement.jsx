@@ -87,17 +87,17 @@ export default function BlogsManagement() {
 
       <AdminPanel title="Blogs Management Table" meta="Thumbnail, title, category, type, author, status, views, likes, created, updated, and actions.">
         <div className="admin-filter-bar">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title or slug" />
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+          <input className="admin-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title or slug" />
+          <select className="admin-select" value={status} onChange={(event) => setStatus(event.target.value)}>
             {STATUS_FILTERS.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <select className="admin-select" value={category} onChange={(event) => setCategory(event.target.value)}>
             {CATEGORY_FILTERS.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
         </div>
 
         {filtered.length ? (
-          <div className="table-wrap">
+          <div className="admin-table-wrapper">
             <table className="admin-table">
               <thead>
                 <tr>

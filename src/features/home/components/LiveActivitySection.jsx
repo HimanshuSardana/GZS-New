@@ -3,10 +3,10 @@ import SectionOverline from './shared/SectionOverline';
 import SectionHeading from './shared/SectionHeading';
 
 const STATS = [
-  { value: '280', label: 'Members online now', color: '#16A34A' },
-  { value: '12', label: 'Tournaments active today', color: '#EA580C' },
-  { value: '47', label: 'Skills verified this week', color: '#7C3AED' },
-  { value: '1.2k', label: 'Community posts today', color: '#0EA5E9' },
+  { value: '280', label: 'Members online now', color: 'var(--home-tourney-accent)' },
+  { value: '12', label: 'Tournaments active today', color: 'var(--home-community-accent)' },
+  { value: '47', label: 'Skills verified this week', color: 'var(--home-profile-accent)' },
+  { value: '1.2k', label: 'Community posts today', color: 'var(--home-games-accent)' },
 ];
 
 const ACTIVITY = [
@@ -22,7 +22,7 @@ const ACTIVITY = [
 export default function LiveActivitySection() {
   return (
     <section className="section-grey">
-      <div className="section-container">
+      <div className="container-global">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -41,7 +41,7 @@ export default function LiveActivitySection() {
           {STATS.map((s, i) => (
             <motion.div
               key={s.label}
-              className="bg-white border border-[#E2E8F0] rounded-xl p-6 text-center"
+              className="bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-xl p-6 text-center"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -69,9 +69,9 @@ export default function LiveActivitySection() {
             {ACTIVITY.map((a, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 bg-white border border-[#E2E8F0] rounded-lg px-3 py-2 whitespace-nowrap"
+                className="flex items-center gap-2 bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-lg px-3 py-2 whitespace-nowrap"
               >
-                <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+                <span className="w-2 h-2 rounded-full bg-[var(--status-success)] shadow-[0_0_8px_var(--status-success)] shrink-0" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
                 <span className="text-xs" style={{ color: 'var(--theme-text)' }}>{a}</span>
               </div>
             ))}

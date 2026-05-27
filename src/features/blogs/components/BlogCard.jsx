@@ -34,9 +34,9 @@ function BlogCard({ blog = {}, onClick, variant = 'default' }) {
     return (
       <Link
         to={href}
-        className="flex gap-3 group items-center hover:bg-[#F8FAFC] rounded-xl p-2 transition-colors"
+        className="flex gap-3 group items-center hover:bg-[var(--theme-bg-alt)] rounded-xl p-2 transition-colors"
       >
-        <div className="w-16 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+        <div className="w-16 h-14 rounded-lg overflow-hidden shrink-0 bg-[var(--theme-bg-alt)]">
           <img
             src={image || '/images/blogs.jpg'}
             alt={title}

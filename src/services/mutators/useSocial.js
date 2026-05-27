@@ -39,10 +39,10 @@ export const useSocial = () => {
     const useLikePost = () => {
         return useMutation({
             mutationFn: socialService.likePost,
-            onMutate: async (postId) => {
+            onMutate: async () => {
                 // Optimistic UI updates could go here
             },
-            onSuccess: (_, postId) => {
+            onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['social', 'feed'] });
             }
         });

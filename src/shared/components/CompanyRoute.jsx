@@ -1,31 +1,18 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '@/app/providers/AuthProvider';
+import authService from '@/services/features/authService';
 
-/**
- * CompanyRoute
- * ─────────────────────────────────────────────────────────
- * Route guard for company-only zones (/company/*).
- * Per spec: "Company routes redirect standard user accounts to /home
- * with no error — they simply never see the company section."
- *
- * isCompany is derived from user.role === 'company'.
- * For dev/dummy sessions, add role: 'company' to dummyLogin() userData
- * to test company flows.
- */
-const CompanyRoute = () => {
-    const { user } = useAuth();
+export default function CompanyRoute({ children }) {
+  const user = authService.getCurrentUser();
+  const isOrg = user?.account_type === 'organization';
 
-    // Derive company status from JWT role field
-    const isCompany = user?.role === 'company' || user?.accountType === 'company';
+  if (!isOrg) {
+    // In a real app we would trigger a toast here
+    console.warn("Company access required");
+    return <Navigate to="/profile" replace />;
+  }
 
-    if (!isCompany) {
-        return <Navigate to="/home" replace />;
-    }
-
-    return <Outlet />;
-};
-
-export default CompanyRoute;
+  return children || <Outlet />;
+}
 
 
 

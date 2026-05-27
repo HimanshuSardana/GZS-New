@@ -33,12 +33,14 @@ function BlogCard({
           src={image || "/images/blogs.jpg"}
           alt={title}
           className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--theme-card)] via-transparent to-transparent opacity-60" />
         
         {/* Category/Highlight Tag */}
         {highlighted && (
-            <div className="absolute top-6 left-6 px-4 py-1.5 bg-[var(--theme-primary)] text-white text-xs font-black uppercase tracking-wide rounded-full shadow-2xl italic">
+            <div className="absolute top-6 left-6 px-4 py-1.5 bg-[var(--theme-primary)] text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-2xl italic">
                 PRIME_INTEL
             </div>
         )}
@@ -54,8 +56,8 @@ function BlogCard({
       <div className="p-10 flex flex-col flex-1 space-y-6">
         <Link to={`/blog/${id}`} className="space-y-3 block">
             <div className="flex items-center gap-3 opacity-30">
-                <FiClock size={12} />
-                <span className="text-xs font-black uppercase tracking-widest italic">Trace Processed: 12H AGO</span>
+                <FiClock size={12} className="text-[var(--theme-primary)]" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] italic">Trace Processed // 12H_AGO</span>
             </div>
             <h3 className="text-2xl font-black uppercase tracking-tighter text-[var(--theme-text)] italic leading-[1.1] group-hover:text-[var(--theme-primary)] transition-colors">
               {title}

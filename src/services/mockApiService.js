@@ -1,10 +1,16 @@
-/* 
-  MOCK API SERVICE (PERSISTENCE LAYER)
-  This service acts as the central "Source of Truth" for the application.
-  In a real scenario, this would communicate with a SQL/NoSQL database.
-  
-  Phase 1 Expanded — covers: Games, Blogs, Tournaments, Users, Community, Profiles, Social
-*/
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+export async function safeApiCall(realCall, mockFallback) {
+  if (USE_MOCK) return mockFallback();
+  try { return await realCall(); }
+  catch (err) {
+    const isNetworkError = err.code === 'ERR_NETWORK' || err.code === 'ECONNREFUSED';
+    const isAuthError = err.response?.status === 401 || err.response?.status === 403;
+    
+    if (isNetworkError || isAuthError) return mockFallback();
+    throw err;
+  }
+}
 
 // Mutable "Database"
 let DB = {

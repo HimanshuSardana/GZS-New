@@ -1,38 +1,137 @@
-version: '3.8'
+
+# ── Credentials ────────────────────────────────────────────────────────────────
+# 1.  cp backend/.env.docker.example backend/.env.docker
+# 2.  Fill in real passwords (the file is gitignored).
+# 3.  docker compose --env-file .env.docker up -d
+#
+# Variable substitution (${VAR}) below is resolved from the file passed via
+# --env-file, or from a .env symlink/copy in the same directory.
+# ──────────────────────────────────────────────────────────────────────────────
 
 services:
-  db:
-    image: postgres:15-alpine
+
+  # ── Postgres ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
     container_name: gzs_postgres
     environment:
-      POSTGRES_DB: gzonesphere
-      POSTGRES_USER: gzs_admin
-      POSTGRES_PASSWORD: gzs_secure_password
+      POSTGRES_DB: GzoneSphere
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
-      - ./sql:/docker-entrypoint-initdb.d
-      - gzs_db_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d GzoneSphere"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # ── MongoDB ─────────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: gzs_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: gzonesphere
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: gzs_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Core API (Python / FastAPI) ───────────────────────────────────────────────
   core-api:
     build: ./core-api
     container_name: gzs_core_api
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://gzs_admin:gzs_secure_password@db:5432/gzonesphere
+      DATABASE_URL: ${CORE_DATABASE_URL}
+      MONGO_URL: ${MONGO_URL}
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: dev-secret-key-change-in-production-64-chars-minimum-GzoneSphere
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+      ENV: development
+      SQL_ECHO: "false"
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./core-api:/app
+    # --reload is a dev-only override; the production Dockerfile CMD omits it.
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+  # ── CMS API (Go / Gin) ────────────────────────────────────────────────────────
   cms-api:
     build: ./cms-api
     container_name: gzs_cms_api
     ports:
-      - "8080:8080"
+      - "8001:8080"
     environment:
-      DATABASE_URL: postgresql://gzs_admin:gzs_secure_password@db:5432/gzonesphere
+      DATABASE_URL: ${CMS_DATABASE_URL}
+      REDIS_URL: redis://redis:6379
+      PORT: "8080"
+      CORE_API_URL: http://core-api:8000
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+      ENV: development
+      JWT_SECRET: dev-secret-key-change-in-production-64-chars-minimum-GzoneSphere
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Frontend (React / nginx) ─────────────────────────────────────────────────
+  # Build context is the project root (one level above this compose file).
+  # VITE_* vars are baked into the JS bundle at build time — not runtime env.
+  # Update ALLOWED_ORIGINS on core-api and cms-api when the public domain changes.
+  frontend:
+    build:
+      context: ../
+      dockerfile: Dockerfile.frontend
+      args:
+        VITE_CORE_API_URL: ${VITE_CORE_API_URL:-/api/core}
+        VITE_CMS_API_URL:  ${VITE_CMS_API_URL:-/api/cms}
+        VITE_USE_MOCK:     ${VITE_USE_MOCK:-false}
+        VITE_REAL_AUTH:    ${VITE_REAL_AUTH:-true}
+    container_name: gzs_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - core-api
+      - cms-api
 
 volumes:
-  gzs_db_data:
+  pgdata:
+  mongodata:
+  redisdata:

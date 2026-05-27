@@ -1,21 +1,22 @@
-import core from '@/services/api/core';
-import { CORE } from '@/services/api/endpoints';
+import core from '../api/core';
+import { CORE } from '../api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
 
 const messageService = {
-    getConversations: async () => {
-        const response = await core.get(CORE.MESSAGES.LIST);
-        return response;
-    },
+  getConversations: () => safeApiCall(
+    () => core.get(CORE.MESSAGES.CONVERSATIONS).then(r => r.data),
+    () => mockApiService.getConversations()
+  ),
 
-    getConversation: async (userId, params = {}) => {
-        const response = await core.get(CORE.MESSAGES.CONVERSATION(userId), { params });
-        return response;
-    },
+  getMessages: (conversationId) => safeApiCall(
+    () => core.get(CORE.MESSAGES.CONVERSATION(conversationId)).then(r => r.data),
+    () => mockApiService.getConversation(conversationId)
+  ),
 
-    sendMessage: async (userId, messageData) => {
-        const response = await core.post(CORE.MESSAGES.SEND(userId), messageData);
-        return response;
-    },
+  sendMessage: (conversationId, content) => safeApiCall(
+    () => core.post(CORE.MESSAGES.SEND(conversationId), { content }).then(r => r.data),
+    () => mockApiService.sendDM(conversationId, content)
+  ),
 };
 
 export default messageService;

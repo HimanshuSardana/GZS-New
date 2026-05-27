@@ -1,7 +1,15 @@
-import { FiCornerUpLeft, FiFlag, FiHeart, FiTrash2 } from 'react-icons/fi';
+import { useMemo, useState } from 'react';
+import { FiCheckCircle, FiChevronDown, FiCode, FiCopy, FiCornerUpLeft, FiEdit2, FiFlag, FiTrash2 } from 'react-icons/fi';
 
-function formatTime(value) {
-  return new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+function formatRelativeTime(value) {
+  const now = Date.now();
+  const diffMs = now - new Date(value).getTime();
+  const diffMin = Math.max(1, Math.floor(diffMs / 60000));
+  if (diffMin < 60) return `${diffMin} min ago`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs} hr ago`;
+  const diffDays = Math.floor(diffHrs / 24);
+  return `${diffDays} day ago`;
 }
 
 const reactionEntries = (reactions) =>
@@ -10,21 +18,66 @@ const reactionEntries = (reactions) =>
     count: Array.isArray(users) ? users.length : Number(users) || 0,
   }));
 
-export default function ChatMessage({ message, isOwn, isGrouped }) {
+function renderInlineMarkdown(text) {
+  const tokens = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
+  return tokens.map((token, idx) => {
+    if (token.startsWith('`') && token.endsWith('`')) {
+      return (
+        <code key={`md-${idx}`} className="rounded px-1 py-0.5 text-xs" style={{ background: 'var(--theme-bg-section)', color: 'var(--theme-text)' }}>
+          {token.slice(1, -1)}
+        </code>
+      );
+    }
+    if (token.startsWith('**') && token.endsWith('**')) {
+      return <strong key={`md-${idx}`}>{token.slice(2, -2)}</strong>;
+    }
+    if (token.startsWith('*') && token.endsWith('*')) {
+      return <em key={`md-${idx}`}>{token.slice(1, -1)}</em>;
+    }
+    return <span key={`md-${idx}`}>{token}</span>;
+  });
+}
+
+function renderMarkdown(content) {
+  const parts = content.split(/```([\s\S]*?)```/g);
+  return parts.map((part, idx) => {
+    if (idx % 2 === 1) {
+      return (
+        <pre key={`block-${idx}`} className="my-2 overflow-x-auto rounded-xl border p-3 text-xs" style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-card)', color: 'var(--theme-text)' }}>
+          <code>{part}</code>
+        </pre>
+      );
+    }
+    return (
+      <p key={`text-${idx}`} className="whitespace-pre-wrap">
+        {renderInlineMarkdown(part)}
+      </p>
+    );
+  });
+}
+
+const REACTION_CHOICES = ['👍', '❤️', '😂', '🔥', '👀'];
+
+export default function ChatMessage({ message, isOwn, isGrouped, onOpenProfile }) {
   const reactions = reactionEntries(message.reactions);
+  const [showActions, setShowActions] = useState(false);
+  const exactTime = useMemo(() => new Date(message.created_at).toLocaleString(), [message.created_at]);
+
+  const mediaItems = message.media_urls || [];
 
   if (isGrouped) {
     return (
       <div className="group pl-14 pr-3">
-        <div className="rounded-2xl px-3 py-2 text-sm leading-6 text-slate-200 transition hover:bg-slate-900/60">
-          {message.content}
+        <div className="rounded-2xl px-3 py-2 text-sm leading-6 transition hover:bg-[var(--theme-bg-alt)]" style={{ color: 'var(--theme-text)' }}>
+          {renderMarkdown(message.content)}
         </div>
         {reactions.length ? (
           <div className="mt-2 flex flex-wrap gap-2 pl-3">
             {reactions.map((reaction) => (
               <button
                 key={`${message.id}-${reaction.emoji}`}
-                className="rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1 text-xs text-slate-200"
+                className="rounded-full border px-2.5 py-1 text-xs"
+                style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-card)', color: 'var(--theme-text)' }}
               >
                 {reaction.emoji} {reaction.count}
               </button>
@@ -36,7 +89,7 @@ export default function ChatMessage({ message, isOwn, isGrouped }) {
   }
 
   return (
-    <div className="group flex gap-3 rounded-2xl px-3 py-3 transition hover:bg-slate-900/60">
+    <div className="community-message group flex gap-3 transition">
       <div className="shrink-0">
         {message.sender?.avatar_url ? (
           <img
@@ -53,47 +106,96 @@ export default function ChatMessage({ message, isOwn, isGrouped }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-white">
-            {message.sender?.display_name || message.sender?.username || 'Community Member'}
-          </span>
+          <button
+            type="button"
+            onMouseEnter={() => onOpenProfile?.(message.sender)}
+            onClick={() => onOpenProfile?.(message.sender)}
+            className="text-sm font-semibold underline decoration-dotted underline-offset-4"
+            style={{ color: 'var(--theme-text)' }}
+          >
+            @{message.sender?.username || 'community_member'}
+          </button>
           <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-medium text-indigo-200">
             {message.branchLabel || 'Community'}
           </span>
-          <span className="text-xs text-slate-500">{formatTime(message.created_at)}</span>
+          <span className="text-xs" style={{ color: 'var(--theme-text-muted)' }} title={exactTime}>
+            {formatRelativeTime(message.created_at)}
+          </span>
         </div>
 
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-200">{message.content}</p>
+        <div className="mt-1 text-sm leading-6" style={{ color: 'var(--theme-text)' }}>{renderMarkdown(message.content)}</div>
 
-        {reactions.length ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {reactions.map((reaction) => (
-              <button
-                key={`${message.id}-${reaction.emoji}`}
-                className="rounded-full border border-slate-700 bg-slate-900/70 px-2.5 py-1 text-xs text-slate-200 transition hover:border-indigo-400/50"
-              >
-                {reaction.emoji} {reaction.count}
-              </button>
+        {mediaItems.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {mediaItems.map((url) => (
+              <div key={url} className="overflow-hidden rounded-xl border" style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-card)' }}>
+                <img src={url} alt="attachment" className="h-28 w-full object-cover" />
+              </div>
             ))}
           </div>
         ) : null}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {REACTION_CHOICES.map((emoji) => (
+            <button
+              key={`${message.id}-${emoji}-option`}
+              className="rounded-full border px-2 py-1 text-xs opacity-0 transition group-hover:opacity-100 hover:border-[var(--theme-primary)]"
+              style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-bg-alt)', color: 'var(--theme-text-muted)' }}
+            >
+              {emoji}
+            </button>
+          ))}
+          <button
+            className="rounded-full border px-2.5 py-1 text-xs opacity-0 transition group-hover:opacity-100"
+            style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-bg-alt)', color: 'var(--theme-text-muted)' }}
+          >
+            Add reaction
+          </button>
+          {reactions.map((reaction) => (
+            <button
+              key={`${message.id}-${reaction.emoji}`}
+              className="rounded-full border px-2.5 py-1 text-xs transition hover:border-[var(--theme-primary)]"
+              style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-card)', color: 'var(--theme-text)' }}
+            >
+              {reaction.emoji} {reaction.count}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="hidden self-start rounded-xl border border-slate-800 bg-slate-950/90 p-1 opacity-0 transition group-hover:flex group-hover:opacity-100">
-        <button className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-900 hover:text-white" aria-label="Reply">
-          <FiCornerUpLeft size={14} />
+      <div className="relative self-start">
+        <button
+          type="button"
+          onClick={() => setShowActions((current) => !current)}
+          className="hidden rounded-xl border px-2 py-1 opacity-0 transition group-hover:flex group-hover:opacity-100"
+          style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-bg-alt)', color: 'var(--theme-text-muted)' }}
+          aria-label="Message actions"
+        >
+          <FiChevronDown size={14} />
         </button>
-        <button className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-900 hover:text-white" aria-label="React">
-          <FiHeart size={14} />
-        </button>
-        {isOwn ? (
-          <button className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-900 hover:text-rose-300" aria-label="Delete">
-            <FiTrash2 size={14} />
-          </button>
-        ) : (
-          <button className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-900 hover:text-amber-300" aria-label="Report">
-            <FiFlag size={14} />
-          </button>
-        )}
+
+        {showActions ? (
+          <div className="absolute right-0 z-10 mt-1 w-40 rounded-xl border p-1 shadow-lg" style={{ borderColor: 'var(--theme-border)', background: 'var(--theme-card)' }}>
+            {[
+              { label: 'Reply', icon: FiCornerUpLeft },
+              { label: 'Copy', icon: FiCopy },
+              { label: 'Report', icon: FiFlag },
+              ...(isOwn ? [{ label: 'Edit', icon: FiEdit2 }, { label: 'Delete', icon: FiTrash2 }] : []),
+            ].map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={`${message.id}-${action.label}`}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-[var(--theme-bg-alt)]"
+                  style={{ color: 'var(--theme-text)' }}
+                >
+                  <Icon size={13} />
+                  {action.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     </div>
   );

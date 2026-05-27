@@ -88,6 +88,22 @@ export const useShowcaseFeed = (branchSlug) =>
         enabled: !!branchSlug,
     });
 
+export const useGameChatPreview = (gameSlug, limit = 5) =>
+  useQuery({
+    queryKey: ['community', 'chat-preview', gameSlug],
+    queryFn: () => communityService.getGameChatPreview(gameSlug, limit),
+    enabled: !!gameSlug,
+    refetchInterval: 30000,
+  });
+
+export const useGameStats = (gameSlug) =>
+  useQuery({
+    queryKey: ['community', 'game-stats', gameSlug],
+    queryFn: () => communityService.getGameStats(gameSlug),
+    enabled: !!gameSlug,
+    refetchInterval: 60000,
+  });
+
 export const useCommunity = () => ({
     useBranches,
     useBranch,

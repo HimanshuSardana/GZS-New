@@ -32,7 +32,7 @@ const CARDS = [
 export default function DifferentiatorSection() {
   return (
     <section className="section-dark">
-      <div className="section-container">
+      <div className="container-global">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -41,7 +41,7 @@ export default function DifferentiatorSection() {
           className="text-center max-w-2xl mx-auto mb-14"
         >
           <SectionHeading light>What makes GzoneSphere different.</SectionHeading>
-          <p className="mt-4 text-base md:text-lg" style={{ color: 'rgba(255,255,255,0.65)' }}>
+          <p className="mt-4 text-base md:text-lg text-[var(--theme-text-inverse)]/65">
             We did not build another app. We built the infrastructure gaming was always missing.
           </p>
         </motion.div>
@@ -59,15 +59,15 @@ export default function DifferentiatorSection() {
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
                 style={{
-                  background: c.accent ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.08)',
+                  background: c.accent ? 'var(--status-success-soft)' : 'var(--theme-bg-dark)/10',
                 }}
               >
-                <c.Icon size={20} style={{ color: c.accent ? '#4ADE80' : '#FFFFFF' }} />
+                <c.Icon size={20} style={{ color: c.accent ? 'var(--status-success)' : 'var(--theme-text-inverse)' }} />
               </div>
-              <h3 className="text-base font-bold mb-2" style={{ color: c.accent ? '#4ADE80' : '#FFFFFF' }}>
+              <h3 className="text-base font-bold mb-2" style={{ color: c.accent ? 'var(--status-success)' : 'var(--theme-text-inverse)' }}>
                 {c.title}
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{c.body}</p>
+              <p className="text-sm leading-relaxed text-[var(--theme-text-inverse)]/60">{c.body}</p>
             </motion.div>
           ))}
         </div>

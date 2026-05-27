@@ -10,8 +10,8 @@ const SECTIONS = [
     desc: 'Every game, one hub. Detailed GamePost pages with storylines, guides, specs, and community.',
     stat: '340+ games',
     link: '/games',
-    accent: '#0EA5E9',
-    iconBg: 'rgba(14,165,233,0.1)',
+    accent: 'var(--home-games-accent)',
+    iconBg: 'var(--home-games-bg)',
     Icon: FiMonitor,
   },
   {
@@ -19,8 +19,8 @@ const SECTIONS = [
     desc: 'The editorial layer. Reviews, analysis, health guides, industry news — written for gamers.',
     stat: '850+ articles',
     link: '/blog',
-    accent: '#D97706',
-    iconBg: 'rgba(217,119,6,0.1)',
+    accent: 'var(--blog-amber)',
+    iconBg: 'var(--theme-primary-soft)',
     Icon: FiBookOpen,
   },
   {
@@ -28,8 +28,8 @@ const SECTIONS = [
     desc: 'Compete for real. From casual brackets to championship cups. Esports, art, writing, and more.',
     stat: '12 active tournaments',
     link: '/tournaments',
-    accent: '#16A34A',
-    iconBg: 'rgba(22,163,74,0.1)',
+    accent: 'var(--home-tourney-accent)',
+    iconBg: 'var(--home-tourney-bg)',
     Icon: FiAward,
   },
   {
@@ -37,8 +37,8 @@ const SECTIONS = [
     desc: 'Your verified gaming identity. One master profile. Seven domain sub-profiles. Skills that prove themselves.',
     stat: 'How it works →',
     link: '/profile/how-it-works',
-    accent: '#7C3AED',
-    iconBg: 'rgba(124,58,237,0.1)',
+    accent: 'var(--home-profile-accent)',
+    iconBg: 'var(--home-profile-bg)',
     Icon: FiUser,
   },
   {
@@ -46,8 +46,8 @@ const SECTIONS = [
     desc: 'Find your people. Nine domain branches. Real-time chat, LFG boards, showcase, events.',
     stat: '280 members online',
     link: '/community',
-    accent: '#EA580C',
-    iconBg: 'rgba(234,88,12,0.1)',
+    accent: 'var(--home-community-accent)',
+    iconBg: 'var(--home-community-bg)',
     Icon: FiUsers,
   },
   {
@@ -55,8 +55,8 @@ const SECTIONS = [
     desc: 'Turn passion into profession. Jobs, playtesting, mentorship — all gaming-focused.',
     stat: 'Coming Phase 2 →',
     link: '#',
-    accent: '#64748B',
-    iconBg: 'rgba(100,116,139,0.1)',
+    accent: 'var(--theme-text-muted)',
+    iconBg: 'var(--theme-bg-alt)',
     Icon: FiBriefcase,
     comingSoon: true,
   },
@@ -65,7 +65,7 @@ const SECTIONS = [
 export default function PlatformSections() {
   return (
     <section className="section-grey">
-      <div className="section-container">
+      <div className="container-global">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -93,8 +93,7 @@ export default function PlatformSections() {
               <Link to={s.link} className="gzs-card-elevated block cursor-pointer h-full">
                 {s.comingSoon && (
                   <span
-                    className="absolute top-4 right-4 text-xs font-semibold px-2 py-0.5 rounded"
-                    style={{ background: '#FEF3C7', color: '#92400E' }}
+                    className="absolute top-4 right-4 text-xs font-semibold px-2 py-0.5 rounded bg-[var(--status-warning-soft)] text-[var(--status-warning)]"
                   >
                     Phase 2
                   </span>

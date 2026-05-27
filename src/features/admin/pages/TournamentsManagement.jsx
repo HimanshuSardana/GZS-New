@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 import { mockApiService } from '@services/mockApiService';
@@ -101,61 +101,96 @@ export default function TournamentsManagement() {
       <AdminMetrics items={metrics} />
 
       <AdminPanel title="Tournaments Management Table" meta="Banner, tournament name, game/domain, format, status, registrations, start date, prize pool, organiser, and actions.">
-        <div className="admin-filter-bar">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by name or slug" />
-          <select value={domain} onChange={(event) => setDomain(event.target.value)}>
-            {DOMAIN_FILTERS.map((option) => <option key={option} value={option}>{option}</option>)}
-          </select>
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
-            {STATUS_FILTERS.map((option) => <option key={option} value={option}>{option}</option>)}
-          </select>
-          <select value={prizeType} onChange={(event) => setPrizeType(event.target.value)}>
-            {PRIZE_FILTERS.map((option) => <option key={option} value={option}>{option}</option>)}
-          </select>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex-1 min-w-[280px]">
+            <input 
+              value={search} 
+              onChange={(event) => setSearch(event.target.value)} 
+              placeholder="Search by name or slug"
+              className="admin-input"
+            />
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <select 
+              value={domain} 
+              onChange={(event) => setDomain(event.target.value)}
+              className="admin-select"
+            >
+              {DOMAIN_FILTERS.map((option) => <option key={option} value={option}>{option.toUpperCase()}</option>)}
+            </select>
+            <select 
+              value={status} 
+              onChange={(event) => setStatus(event.target.value)}
+              className="admin-select"
+            >
+              {STATUS_FILTERS.map((option) => <option key={option} value={option}>{option.toUpperCase()}</option>)}
+            </select>
+            <select 
+              value={prizeType} 
+              onChange={(event) => setPrizeType(event.target.value)}
+              className="admin-select"
+            >
+              {PRIZE_FILTERS.map((option) => <option key={option} value={option}>{option.toUpperCase()}</option>)}
+            </select>
+          </div>
         </div>
 
         {filtered.length ? (
-          <div className="table-wrap">
+          <div className="admin-table-wrapper">
             <table className="admin-table">
               <thead>
-                <tr>
-                  <th>Tournament</th>
-                  <th>Game / Domain</th>
-                  <th>Format</th>
-                  <th>Status</th>
-                  <th>Registrations</th>
-                  <th>Start Date</th>
-                  <th>Prize Pool</th>
-                  <th>Organiser</th>
-                  <th>Actions</th>
+                <tr className="bg-[var(--theme-bg-alt)] border-b-2 border-[var(--theme-border)]">
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Tournament</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Game / Domain</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Format</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)] text-center">Registrations</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Start Date</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Prize Pool</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Organiser</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)] text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y-2 divide-[var(--theme-border)]">
                 {filtered.map((tournament) => (
-                  <tr key={tournament.id}>
-                    <td>
-                      <div className="admin-table-title-cell">
-                        <strong className="admin-table-title-cell__title">{tournament.name}</strong>
-                        <span className="admin-table-title-cell__meta">/{tournament.slug}</span>
+                  <tr key={tournament.id} className="hover:bg-[var(--theme-bg-alt)]/50 transition-colors">
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-1">
+                        <strong className="text-sm font-bold text-[var(--theme-text)]">{tournament.name}</strong>
+                        <span className="text-[10px] font-mono text-[var(--theme-text-muted)] opacity-60">/{tournament.slug}</span>
                       </div>
                     </td>
-                    <td>{tournament.game || tournament.domain}</td>
-                    <td>{tournament.format}</td>
-                    <td>
-                      <AdminStatusBadge tone={toneForStatus(tournament.status)}>
+                    <td className="px-6 py-5 text-xs font-bold text-[var(--theme-text-muted)] uppercase italic">{tournament.game || tournament.domain}</td>
+                    <td className="px-6 py-5 text-xs font-bold text-[var(--theme-text-muted)] uppercase italic">{tournament.format}</td>
+                    <td className="px-6 py-5">
+                      <span 
+                        className="admin-status-badge"
+                        style={
+                          toneForStatus(tournament.status) === 'success'
+                            ? { background: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                            : toneForStatus(tournament.status) === 'warning'
+                            ? { background: 'var(--status-draft-bg)', color: 'var(--status-draft-text)' }
+                            : { background: 'var(--status-danger-bg)', color: 'var(--status-danger-text)' }
+                        }
+                      >
                         {tournament.status}
-                      </AdminStatusBadge>
+                      </span>
                     </td>
-                    <td>{tournament.registrations} / {tournament.maxParticipants || '—'}</td>
-                    <td>{tournament.startDate || 'TBD'}</td>
-                    <td>{tournament.prizePool}</td>
-                    <td>{tournament.organiser}</td>
-                    <td>
-                      <div className="admin-action-row">
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => navigate(`/admin/tournaments/${tournament.id}/edit`)}>Edit</button>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => navigate(`/admin/tournaments/${tournament.id}/registrations`)}>Registrations</button>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => navigate(`/admin/tournaments/${tournament.id}/brackets`)}>Brackets</button>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeTournament(tournament.id)}>Delete</button>
+                    <td className="px-6 py-5 text-center text-xs font-bold text-[var(--theme-text)] tabular-nums">
+                      {tournament.registrations} <span className="opacity-30">/</span> {tournament.maxParticipants || '—'}
+                    </td>
+                    <td className="admin-table-cell-meta">{tournament.startDate || 'TBD'}</td>
+                    <td className="px-6 py-5 text-xs font-bold text-[var(--theme-primary)] italic uppercase">{tournament.prizePool}</td>
+                    <td className="px-6 py-5 text-xs font-bold text-[var(--theme-text-muted)] italic">{tournament.organiser}</td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-2">
+                        <button type="button" className="admin-btn" onClick={() => navigate(`/admin/tournaments/${tournament.id}/edit`)}>Edit</button>
+                        <button type="button" className="admin-btn" onClick={() => navigate(`/admin/tournaments/${tournament.id}/registrations`)}>Reg</button>
+                        <button type="button" className="admin-btn" onClick={() => navigate(`/admin/tournaments/${tournament.id}/brackets`)}>Brackets</button>
+                        <Link to={`/admin/tournaments/${tournament.id}/analytics`} className="admin-btn">Analytics</Link>
+                        <button type="button" className="p-2 text-[var(--status-error)] hover:bg-[var(--status-error-soft)] rounded-xl transition-colors" onClick={() => removeTournament(tournament.id)}>
+                           <FiX size={14} strokeWidth={3} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -169,18 +204,18 @@ export default function TournamentsManagement() {
       </AdminPanel>
 
       <AdminPanel title="Tournament Operations" meta="Pointers for registrations, bracket management, and analytics views.">
-        <div className="admin-form-grid cols-3">
-          <div className="admin-preview-box">
-            <strong>Registration Management</strong>
-            <p>Use each tournament row to open registrations and manage approval, disqualification, export, and capacity changes.</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="p-6 rounded-3xl border-2 border-[var(--theme-border)] bg-[var(--theme-card)] shadow-sm hover:border-[var(--theme-primary)]/30 transition-all group">
+            <strong className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)] group-hover:text-[var(--theme-primary)] transition-colors">Registration Management</strong>
+            <p className="mt-4 text-xs font-bold leading-relaxed text-[var(--theme-text-muted)] italic opacity-80">Use each tournament row to open registrations and manage approval, disqualification, export, and capacity changes.</p>
           </div>
-          <div className="admin-preview-box">
-            <strong>Bracket Management</strong>
-            <p>Bracket routes are wired through dynamic per-tournament paths so generation and editing no longer break on shared pages.</p>
+          <div className="p-6 rounded-3xl border-2 border-[var(--theme-border)] bg-[var(--theme-card)] shadow-sm hover:border-[var(--theme-primary)]/30 transition-all group">
+            <strong className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)] group-hover:text-[var(--theme-primary)] transition-colors">Bracket Management</strong>
+            <p className="mt-4 text-xs font-bold leading-relaxed text-[var(--theme-text-muted)] italic opacity-80">Bracket routes are wired through dynamic per-tournament paths so generation and editing no longer break on shared pages.</p>
           </div>
-          <div className="admin-preview-box">
-            <strong>Analytics</strong>
-            <p>Use the tournament detail flow to extend registration funnels, region breakdowns, and prize payout tracking.</p>
+          <div className="p-6 rounded-3xl border-2 border-[var(--theme-border)] bg-[var(--theme-card)] shadow-sm hover:border-[var(--theme-primary)]/30 transition-all group sm:col-span-2 lg:col-span-1">
+            <strong className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)] group-hover:text-[var(--theme-primary)] transition-colors">Analytics</strong>
+            <p className="mt-4 text-xs font-bold leading-relaxed text-[var(--theme-text-muted)] italic opacity-80">Use the tournament detail flow to extend registration funnels, region breakdowns, and prize payout tracking.</p>
           </div>
         </div>
       </AdminPanel>

@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '@/app/layouts/AuthLayout';
-import { useAuth } from '@/app/providers/AuthProvider';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
+import { useAuthActions as useAuth } from '@/services/mutators/useAuthActions';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function Signup() {
     usePageTheme('auth');
 
     const navigate = useNavigate();
-    const { dummyLogin } = useAuth();
+    const { register, isRegistering } = useAuth();
 
     const [username, setUsername]         = useState('');
     const [email, setEmail]               = useState('');
@@ -18,30 +18,44 @@ export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm]   = useState(false);
     const [agreed, setAgreed]             = useState(false);
-    const [loading, setLoading]           = useState(false);
-    const [error, setError]               = useState('');
-
-    const pwMismatch = confirmPw.length > 0 && confirmPw !== password;
+    const [errors, setErrors]             = useState({});
+    const [serverError, setServerError]   = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (pwMismatch || !agreed) return;
-        setError('');
-        setLoading(true);
-        await new Promise(r => setTimeout(r, 1200));
+        
+        // Local Validation
+        const newErrors = {};
+        if (password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters.";
+        }
+        if (confirmPw !== password) {
+            newErrors.confirmPw = "Passwords do not match.";
+        }
+        if (!agreed) {
+            newErrors.agreed = "You must agree to the terms.";
+        }
 
-        dummyLogin({
-            id: `U-NEW-${Date.now()}`,
-            username: username || email.split('@')[0],
-            email,
-            role: 'user',
-            trust_level: 1.0,
-            gts: 0,
-            rank: 'Fledgling',
-        });
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
 
-        setLoading(false);
-        navigate('/verify-email', { state: { email } });
+        setErrors({});
+        setServerError('');
+
+        try {
+            await register({ username, email, password });
+            navigate('/verify-email', { state: { email } });
+        } catch (err) {
+            const msg = err.response?.data?.error?.message || "Registration failed. Please try again.";
+            setServerError(msg);
+            
+            // Check for field-specific errors from server if available
+            if (err.response?.data?.error?.fields) {
+                setErrors(err.response.data.error.fields);
+            }
+        }
     };
 
     return (
@@ -52,11 +66,12 @@ export default function Signup() {
             </div>
 
             <form onSubmit={handleSubmit} className="auth-form">
-                {error && (
-                    <p className="text-red-500 text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-lg">{error}</p>
+                {serverError && (
+                    <div className="p-4 bg-[var(--status-error-soft)] border border-[var(--status-error)] rounded-xl text-sm text-[var(--status-error)] mb-4">
+                        {serverError}
+                    </div>
                 )}
 
-                {/* Username */}
                 <div>
                     <label className="auth-label">Choose a username</label>
                     <input
@@ -66,15 +81,18 @@ export default function Signup() {
                         value={username}
                         onChange={e => setUsername(e.target.value.replace(/\s/g, ''))}
                         placeholder="gamertag_xyz"
-                        className="auth-input"
+                        className={`auth-input ${errors.username ? 'border-[var(--status-error)]' : ''}`}
                         autoComplete="username"
                     />
-                    <p className="text-xs text-gray-400 mt-1.5">
-                        12 characters max. No spaces. This is your public handle.
-                    </p>
+                    {errors.username ? (
+                        <span className="text-[var(--status-error)] text-xs mt-1 block">{errors.username}</span>
+                    ) : (
+                        <p className="text-xs text-gray-400 mt-1.5">
+                            12 characters max. No spaces. This is your public handle.
+                        </p>
+                    )}
                 </div>
 
-                {/* Email */}
                 <div>
                     <label className="auth-label">Email</label>
                     <input
@@ -83,12 +101,12 @@ export default function Signup() {
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="auth-input"
+                        className={`auth-input ${errors.email ? 'border-[var(--status-error)]' : ''}`}
                         autoComplete="email"
                     />
+                    {errors.email && <span className="text-[var(--status-error)] text-xs mt-1 block">{errors.email}</span>}
                 </div>
 
-                {/* Password */}
                 <div>
                     <label className="auth-label">Password</label>
                     <div className="relative">
@@ -98,7 +116,7 @@ export default function Signup() {
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="auth-input pr-11"
+                            className={`auth-input pr-11 ${errors.password ? 'border-[var(--status-error)]' : ''}`}
                             autoComplete="new-password"
                         />
                         <button
@@ -110,9 +128,9 @@ export default function Signup() {
                             {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                         </button>
                     </div>
+                    {errors.password && <span className="text-[var(--status-error)] text-xs mt-1 block">{errors.password}</span>}
                 </div>
 
-                {/* Confirm Password */}
                 <div>
                     <label className="auth-label">Confirm password</label>
                     <div className="relative">
@@ -122,7 +140,7 @@ export default function Signup() {
                             value={confirmPw}
                             onChange={e => setConfirmPw(e.target.value)}
                             placeholder="••••••••"
-                            className={`auth-input pr-11 ${pwMismatch ? 'border-red-400' : ''}`}
+                            className={`auth-input pr-11 ${errors.confirmPw ? 'border-[var(--status-error)]' : ''}`}
                             autoComplete="new-password"
                         />
                         <button
@@ -134,12 +152,9 @@ export default function Signup() {
                             {showConfirm ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                         </button>
                     </div>
-                    {pwMismatch && (
-                        <p className="text-red-500 text-sm mt-1">Passwords must match</p>
-                    )}
+                    {errors.confirmPw && <span className="text-[var(--status-error)] text-xs mt-1 block">{errors.confirmPw}</span>}
                 </div>
 
-                {/* Terms */}
                 <label className="flex items-start gap-3 cursor-pointer">
                     <input
                         type="checkbox"
@@ -153,24 +168,23 @@ export default function Signup() {
                         <Link to="/terms" className="text-[#1E6F9F] hover:underline underline-offset-2">Terms of Service</Link>
                         {' '}and{' '}
                         <Link to="/privacy" className="text-[#1E6F9F] hover:underline underline-offset-2">Privacy Policy</Link>
+                        {errors.agreed && <span className="text-[var(--status-error)] text-xs mt-1 block">{errors.agreed}</span>}
                     </span>
                 </label>
 
-                {/* Submit */}
                 <button
                     type="submit"
-                    disabled={loading || pwMismatch || !agreed}
+                    disabled={isRegistering}
                     className="auth-btn-primary mt-1"
                 >
-                    {loading ? (
+                    {isRegistering ? (
                         <>
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Creating account...
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            CREATING ACCOUNT...
                         </>
                     ) : 'Create Account →'}
                 </button>
 
-                {/* Switch to Login */}
                 <p className="text-center text-sm text-gray-500">
                     Already have an account?{' '}
                     <Link to="/login" className="text-[#1E6F9F] font-semibold hover:underline underline-offset-2">

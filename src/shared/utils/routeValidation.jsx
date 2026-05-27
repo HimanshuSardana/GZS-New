@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Navigate } from 'react-router-dom';
 
 /**
@@ -11,10 +12,10 @@ export const VALID_COMMUNITY_SLUGS = new Set([
 ]);
 
 // Valid admin ID pattern (numeric or UUID)
-const ID_PATTERN = /^[0-9a-f\-]{1,36}$/i;
+const ID_PATTERN = /^[0-9a-f-]{1,36}$/i;
 
 // Valid slug pattern (lowercase letters, numbers, hyphens)
-const SLUG_PATTERN = /^[a-z0-9\-]+$/;
+const SLUG_PATTERN = /^[a-z0-9-]+$/;
 
 /**
  * Validates community slug parameter
@@ -33,7 +34,7 @@ export const validateCommunitySlug = (slug) => {
 export const validateSlug = (slug) => {
   if (!slug) return false;
   // Allow lowercase letters, numbers, hyphens, underscores
-  return /^[a-z0-9\-_]+$/.test(slug.toLowerCase());
+  return /^[a-z0-9_-]+$/.test(slug.toLowerCase());
 };
 
 /**
@@ -54,7 +55,7 @@ export const validateId = (id) => {
 export const validateUsername = (username) => {
   if (!username) return false;
   // Allow lowercase letters, numbers, underscores, hyphens; 3-30 chars
-  return /^[a-z0-9_\-]{3,30}$/.test(username.toLowerCase());
+  return /^[a-z0-9_-]{3,30}$/.test(username.toLowerCase());
 };
 
 /**

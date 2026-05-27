@@ -1,93 +1,127 @@
 /* ==========================================================
-   COLOR VARIABLES (PALETTE & SEMANTIC)
+   GzoneSphere — MASTER COLOR VARIABLES
+   Single source of truth for every color on the platform.
    ========================================================== */
 
 :root {
-  /* ── Core Brand Palettes (Neutral & Identity) ── */
-  --color-black:          #050505;
-  --color-white:          #ffffff;
-  
-  /* Neutral Grays */
-  --neutral-50:           #fafafa;
-  --neutral-100:          #f5f5f5;
-  --neutral-200:          #e5e5e5;
-  --neutral-300:          #d4d4d4;
-  --neutral-400:          #a3a3a3;
-  --neutral-500:          #737373;
-  --neutral-600:          #525252;
-  --neutral-700:          #404040;
-  --neutral-800:          #262626;
-  --neutral-900:          #171717;
-  --neutral-950:          #0a0a0a;
+  /* ── Neutral Foundation ─────────────────────────────────── */
+  --white:        #FFFFFF;
+  --black:        #050505;
+  --slate-50:     #F8FAFC;
+  --slate-100:    #F1F5F9;
+  --slate-200:    #E2E8F0;
+  --slate-300:    #CBD5E1;
+  --slate-400:    #94A3B8;
+  --slate-500:    #64748B;
+  --slate-600:    #475569;
+  --slate-700:    #334155;
+  --slate-800:    #1E293B;
+  --slate-900:    #0F172A;
 
-  /* ── Specific Theme Primitives ── */
-  --brand-primary:        #D4F234; /* Neon Yellow/Green */
-  --brand-primary-dark:   #b8d922;
-  --brand-primary-light:  #e2f759;
+  /* ── GZS Brand Blue — Home / Auth / Admin primary ───────── */
+  --gzs-blue:        #1D6ADB;
+  --gzs-blue-dark:   #1558B8;
+  --gzs-blue-light:  #3B82F6;
+  --gzs-blue-50:     #EFF6FF;
+  --gzs-blue-100:    #DBEAFE;
+  --gzs-blue-soft:   rgba(29, 106, 219, 0.08);
+  --gzs-blue-rgb:    29, 106, 219;
 
-  /* Semantic - Status & Actions */
-  --status-success-bg:    #dcfce7;
-  --status-success-text:  #166534;
-  --status-draft-bg:      #e5e5e5;
-  --status-draft-text:    #404040;
-  --status-review-bg:     #fef9c3;
-  --status-review-text:   #854d0e;
-  --status-danger-bg:     #fee2e2;
-  --status-danger-text:   #dc2626;
+  /* ── Section Accent: Games ──────────────────────────────── */
+  --accent-games:        #0EA5E9;  /* Sky-500 */
+  --accent-games-dark:   #0284C7;
+  --accent-games-bg:     #F0F9FF;  /* Sky-50 */
+  --accent-games-border: #BAE6FD;  /* Sky-200 */
 
-  /* GamePost Specifics */
-  --gp-red:               #e53935;
-  --gp-red-dark:          #c62828;
-  --gp-red-light:         #ef5350;
-  
-  /* Esports Primitives */
-  --es-green:             #379730;
-  --es-green-dark:        #2f8626;
-  --es-green-light:       #52ba44;
+  /* ── Section Accent: Blog / Editorial ───────────────────── */
+  --accent-blog:         #D97706;  /* Amber-600 */
+  --accent-blog-dark:    #B45309;
+  --accent-blog-bg:      #FFFBEB;  /* Amber-50 */
+  --accent-blog-border:  #FDE68A;  /* Amber-200 */
 
-  /* Blog Primitives */
-  --blog-amber:           #F59E0B;
-  --blog-amber-dark:      #D97706;
-  --blog-amber-light:     #fbbf24;
+  /* ── Section Accent: Esports / Tournaments ───────────────── */
+  --accent-esports:        #16A34A;  /* Green-600 */
+  --accent-esports-dark:   #15803D;
+  --accent-esports-bg:     #F0FDF4;  /* Green-50 */
+  --accent-esports-border: #BBF7D0;  /* Green-200 */
 
-  /* Profile Primitives */
-  --profile-purple:       #8b5cf6;
-  --profile-purple-dark:  #7c3aed;
-  --profile-purple-light: #a78bfa;
+  /* ── Section Accent: Profile ─────────────────────────────── */
+  --accent-profile:        #7C3AED;  /* Violet-600 */
+  --accent-profile-dark:   #6D28D9;
+  --accent-profile-bg:     #FAF5FF;  /* Violet-50 */
+  --accent-profile-border: #DDD6FE;  /* Violet-200 */
 
-  /* Semantic Error (alias for status-danger-text) */
-  --color-error:          var(--status-danger-text);
-  --color-success:        var(--status-success-text);
+  /* ── Section Accent: Community ───────────────────────────── */
+  --accent-community:        #EA580C;  /* Orange-600 */
+  --accent-community-dark:   #C2410C;
+  --accent-community-bg:     #FFF7ED;  /* Orange-50 */
+  --accent-community-border: #FED7AA;  /* Orange-200 */
 
-  /* GZS Blue */
-  --gzs-blue-50: #EFF6FF;
-  --gzs-blue-100: #DBEAFE;
-  --gzs-blue-200: #BFDBFE;
-  --gzs-blue-500: #3B82F6;
-  --gzs-blue-600: #2563EB;
-  --gzs-blue-700: #1D4ED8;
-  --gzs-blue-800: #1E40AF;
-  --gzs-blue-900: #1E3A8A;
-  --gzs-brand-blue: #1D6ADB;
-  /* Slate */
-  --slate-50: #F8FAFC;
-  --slate-100: #F1F5F9;
-  --slate-200: #E2E8F0;
-  --slate-300: #CBD5E1;
-  --slate-400: #94A3B8;
-  --slate-500: #64748B;
-  --slate-600: #475569;
-  --slate-700: #334155;
-  --slate-800: #1E293B;
-  --slate-900: #0F172A;
-  /* Section accent colours */
-  --sky-50: #F0F9FF;
-  --sky-500: #0EA5E9;
-  --sky-600: #0284C7;
-  --green-50: #F0FDF4;
-  --green-600: #16A34A;
-  --violet-50: #FAF5FF;
-  --violet-600: #7C3AED;
-  --orange-50: #FFF7ED;
-  --orange-600: #EA580C;
+  /* ── GamePost specifics (per-game brand color uses CSS var) ─ */
+  --gp-default:      #0EA5E9;  /* fallback when no game brand color */
+  --gp-valorant:     #E53935;
+  --gp-csgo:         #F59E0B;
+
+  /* ── Status Colors ──────────────────────────────────────── */
+  --status-success:      #16A34A;
+  --status-success-bg:   #F0FDF4;
+  --status-success-text: #15803D;
+  --status-error:        #DC2626;
+  --status-error-bg:     #FEF2F2;
+  --status-error-text:   #B91C1C;
+  --status-warning:      #D97706;
+  --status-warning-bg:   #FFFBEB;
+  --status-warning-text: #92400E;
+  --status-info:         #2563EB;
+  --status-info-bg:      #EFF6FF;
+  --status-info-text:    #1D4ED8;
+  --status-draft-bg:     #F1F5F9;
+  --status-draft-text:   #475569;
+
+  /* ── Named Tailwind-style color aliases (used in profile.css, etc.) ── */
+  --green-50:     #F0FDF4;
+  --green-100:    #DCFCE7;
+  --green-600:    #16A34A;
+  --green-700:    #15803D;
+  --violet-50:    #FAF5FF;
+  --violet-600:   #7C3AED;
+  --violet-700:   #6D28D9;
+  --orange-50:    #FFF7ED;
+  --orange-600:   #EA580C;
+  --orange-700:   #C2410C;
+  --sky-50:       #F0F9FF;
+  --sky-600:      #0284C7;
+  --sky-700:      #0369A1;
+  --amber-50:     #FFFBEB;
+  --amber-600:    #D97706;
+  --rose-50:      #FFF1F2;
+  --rose-500:     #F43F5E;
+  --rose-600:     #E11D48;
+
+  /* ── Danger aliases (map to error tokens for backwards compat) ── */
+  --status-danger:       var(--status-error);
+  --status-danger-bg:    var(--status-error-bg);
+  --status-danger-text:  var(--status-error-text);
+  --status-danger-dark:  var(--status-error-text);
+
+  /* ── Soft tint aliases (used throughout UI as faint status backgrounds) ── */
+  --status-success-soft:  var(--status-success-bg);
+  --status-warning-soft:  var(--status-warning-bg);
+  --status-error-soft:    var(--status-error-bg);
+  --status-info-soft:     var(--status-info-bg);
+
+  /* ── RGB values for box-shadow rgba() patterns ─────────────── */
+  --status-success-rgb:   22, 163, 74;
+  --status-error-rgb:     220, 38, 38;
+  --status-warning-rgb:   217, 119, 6;
+  --status-info-rgb:      37, 99, 235;
+
+  /* ── Semantic overlays ───────────────────────────────────── */
+  --overlay-light:  rgba(255, 255, 255, 0.85);
+  --overlay-dark:   rgba(15,  23,  42,  0.60);
+  --overlay-card:   rgba(15,  23,  42,  0.04);
+
+  /* ── Auth layout ─────────────────────────────────────────── */
+  /* Gradient start reuses --slate-900 (#0F172A). End color has no slate match. */
+  --color-bg-auth-end: #0C2A3F;
 }

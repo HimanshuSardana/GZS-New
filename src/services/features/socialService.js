@@ -1,42 +1,89 @@
 import core from '@/services/api/core';
 import { CORE } from '@/services/api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
 
 const socialService = {
-    createPost: async (postData) =>
-        core.post(CORE.SOCIAL.CREATE_POST, postData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        }),
+  createPost: (postData) => safeApiCall(
+    () => core.post(CORE.SOCIAL.CREATE_POST, postData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data),
+    () => mockApiService.createPost(postData)
+  ),
 
-    getFeed: async (params = {}) => core.get(CORE.SOCIAL.FEED, { params }),
+  getFeed: (params = {}) => safeApiCall(
+    () => core.get(CORE.SOCIAL.FEED, { params }).then(r => r.data),
+    () => mockApiService.getFeed()
+  ),
 
-    getUserPosts: async (username, params = {}) => core.get(CORE.SOCIAL.USER_POSTS(username), { params }),
+  getUserPosts: (username, params = {}) => safeApiCall(
+    () => core.get(CORE.SOCIAL.USER_POSTS(username), { params }).then(r => r.data),
+    () => mockApiService.getPosts({ username })
+  ),
 
-    getSubProfilePosts: async (username, type, params = {}) =>
-        core.get(CORE.SOCIAL.SUB_POSTS(username, type), { params }),
+  getSubProfilePosts: (username, type, params = {}) => safeApiCall(
+    () => core.get(CORE.SOCIAL.SUB_POSTS(username, type), { params }).then(r => r.data),
+    () => mockApiService.getPosts({ username, subProfileType: type })
+  ),
 
-    likePost: async (postId) => core.post(CORE.SOCIAL.LIKE(postId)),
+  likePost: (postId) => safeApiCall(
+    () => core.post(CORE.SOCIAL.LIKE(postId)).then(r => r.data),
+    () => mockApiService.likePost(postId)
+  ),
 
-    commentOnPost: async (postId, content) => core.post(CORE.SOCIAL.COMMENT(postId), { content }),
+  commentOnPost: (postId, content) => safeApiCall(
+    () => core.post(CORE.SOCIAL.COMMENT(postId), { content }).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    deletePost: async (postId) => core.delete(CORE.SOCIAL.DELETE_POST(postId)),
+  deletePost: (postId) => safeApiCall(
+    () => core.delete(CORE.SOCIAL.DELETE_POST(postId)).then(r => r.data),
+    () => mockApiService.deletePost(postId)
+  ),
 
-    getFriendsList: async () => core.get(CORE.SOCIAL.FRIENDS),
+  getFriendsList: () => safeApiCall(
+    () => core.get(CORE.SOCIAL.FRIENDS).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    sendFriendRequest: async (userId) => core.post(CORE.SOCIAL.SEND_REQUEST(userId)),
+  sendFriendRequest: (userId) => safeApiCall(
+    () => core.post(CORE.SOCIAL.SEND_REQUEST(userId)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    acceptFriendRequest: async (requestId) => core.post(CORE.SOCIAL.ACCEPT_REQUEST(requestId)),
+  acceptFriendRequest: (requestId) => safeApiCall(
+    () => core.post(CORE.SOCIAL.ACCEPT_REQUEST(requestId)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    followProfile: async (userId) => core.post(CORE.SOCIAL.FOLLOW(userId)),
+  followProfile: (userId) => safeApiCall(
+    () => core.post(CORE.SOCIAL.FOLLOW(userId)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    blockUser: async (userId) => core.post(CORE.SOCIAL.BLOCK(userId)),
+  blockUser: (userId) => safeApiCall(
+    () => core.post(CORE.SOCIAL.BLOCK(userId)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    getSuggestions: async () => core.get(CORE.SOCIAL.SUGGESTIONS),
+  getSuggestions: () => safeApiCall(
+    () => core.get(CORE.SOCIAL.SUGGESTIONS).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    respondToFriendRequest: async (requestId, status) => core.put(CORE.FRIENDS.RESPOND(requestId), { status }),
+  respondToFriendRequest: (requestId, status) => safeApiCall(
+    () => core.put(CORE.FRIENDS.RESPOND(requestId), { status }).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    followSubProfile: async (username, type) => core.post(CORE.FOLLOW.FOLLOW(username, type)),
+  followSubProfile: (username, type) => safeApiCall(
+    () => core.post(CORE.FOLLOW.FOLLOW(username, type)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    unfollowSubProfile: async (username, type) => core.delete(CORE.FOLLOW.UNFOLLOW(username, type)),
+  unfollowSubProfile: (username, type) => safeApiCall(
+    () => core.delete(CORE.FOLLOW.UNFOLLOW(username, type)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 };
 
 export default socialService;

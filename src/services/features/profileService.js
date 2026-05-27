@@ -1,45 +1,107 @@
 import core from '@/services/api/core';
 import { CORE } from '@/services/api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
+
+// All r.data values are already the inner payload — the core client's response
+// interceptor unwraps the { data: <payload>, meta, error } envelope automatically.
 
 const profileService = {
-    getMasterProfile: async () => core.get(CORE.PROFILE.ME),
+  // ── My Profile ─────────────────────────────────────────────────────────────
 
-    getMyProfile: async () => core.get(CORE.PROFILE.ME),
+  getMyProfile: () => safeApiCall(
+    () => core.get(CORE.PROFILE.ME).then(r => r.data),
+    () => mockApiService.getSubProfile('me', 'master')
+  ),
 
-    updateProfile: async (profileData) => core.put(CORE.PROFILE.ME_UPDATE, profileData),
+  updateMyProfile: (data) => safeApiCall(
+    () => core.patch(CORE.PROFILE.ME_UPDATE, data).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    updateMyProfile: async (profileData) => core.put(CORE.PROFILE.ME_UPDATE, profileData),
+  // ── Sub-profiles ───────────────────────────────────────────────────────────
 
-    getSubProfiles: async () => core.get(CORE.PROFILE.SUB_LIST),
+  getMySubProfiles: () => safeApiCall(
+    () => core.get(CORE.PROFILE.SUB_LIST).then(r => r.data ?? []),
+    () => mockApiService.getSubProfiles('me')
+  ),
 
-    createSubProfile: async (subProfileData) => core.post(CORE.PROFILE.SUB_CREATE, subProfileData),
+  createSubProfile: (data) => safeApiCall(
+    () => core.post(CORE.PROFILE.SUB_CREATE, data).then(r => r.data),
+    () => mockApiService.createSubProfile('me', data)
+  ),
 
-    getSubProfileByType: async (type) => core.get(CORE.PROFILE.SUB_BY_TYPE(type)),
+  getSubProfile: (type) => safeApiCall(
+    () => core.get(CORE.PROFILE.SUB_BY_TYPE(type)).then(r => r.data),
+    () => mockApiService.getSubProfile('me', type)
+  ),
 
-    getSubProfile: async (type) => core.get(CORE.PROFILE.SUB_BY_TYPE(type)),
+  updateSubProfile: (type, data) => safeApiCall(
+    () => core.patch(CORE.PROFILE.SUB_UPDATE(type), data).then(r => r.data),
+    () => mockApiService.updateSubProfile('me', type, data)
+  ),
 
-    updateSubProfile: async (type, subProfileData) => core.put(CORE.PROFILE.SUB_UPDATE(type), subProfileData),
+  deleteSubProfile: (type) => safeApiCall(
+    () => core.delete(CORE.PROFILE.SUB_DELETE(type)).then(r => r.data),
+    () => mockApiService.deleteSubProfile('me', type)
+  ),
 
-    deleteSubProfile: async (type) => core.delete(CORE.PROFILE.SUB_DELETE(type)),
+  // ── Public profiles ────────────────────────────────────────────────────────
 
-    getPublicMaster: async (username) => core.get(CORE.PROFILE.PUBLIC_MASTER(username)),
+  getPublicProfile: (username) => safeApiCall(
+    () => core.get(CORE.PROFILE.PUBLIC_MASTER(username)).then(r => r.data),
+    () => mockApiService.getSubProfile('U1', 'dev')
+  ),
 
-    getPublicSub: async (username, type) => core.get(CORE.PROFILE.PUBLIC_SUB(username, type)),
+  getPublicSubProfile: (username, type) => safeApiCall(
+    () => core.get(CORE.PROFILE.PUBLIC_SUB(username, type)).then(r => r.data),
+    () => mockApiService.getSubProfile(username, type)
+  ),
 
-    getSkills: async (type) => core.get(CORE.PROFILE.SKILLS(type)),
+  // ── Skills ─────────────────────────────────────────────────────────────────
 
-    addSkill: async (type, skillData) => core.post(CORE.PROFILE.SKILL_ADD(type), skillData),
+  addSkill: (type, skill) => safeApiCall(
+    () => core.post(CORE.PROFILE.SKILL_ADD(type), skill).then(r => r.data),
+    () => mockApiService.addSkill('me', type, skill)
+  ),
 
-    deleteSkill: async (type, skillId) => core.delete(CORE.PROFILE.SKILL_DELETE(type, skillId)),
+  deleteSkill: (type, id) => safeApiCall(
+    () => core.delete(CORE.PROFILE.SKILL_DELETE(type, id)).then(r => r.data),
+    () => mockApiService.removeSkill('me', type, id)
+  ),
 
-    getProjects: async (type) => core.get(CORE.PROFILE.PROJECTS(type)),
+  // ── Achievements & XP ──────────────────────────────────────────────────────
 
-    addProject: async (type, projectData) => core.post(CORE.PROFILE.PROJECT_ADD(type), projectData),
+  getSubProfileAchievements: (type) => safeApiCall(
+    () => core.get(`${CORE.PROFILE.SUB_BY_TYPE(type)}/achievements`).then(r => r.data ?? []),
+    () => Promise.resolve([])
+  ),
 
-    updateProject: async (type, projectId, projectData) =>
-        core.put(CORE.PROFILE.PROJECT_UPDATE(type, projectId), projectData),
+  getMyXP: () => safeApiCall(
+    () => core.get(CORE.XP.MY_STATS).then(r => r.data),
+    () => Promise.resolve({ level: 'Hustler', current_xp: 450, xp_to_next_level: 550, total_xp: 4450, rank: 'Hustler' })
+  ),
 
-    deleteProject: async (type, projectId) => core.delete(CORE.PROFILE.PROJECT_DELETE(type, projectId)),
+  // ── Notifications ──────────────────────────────────────────────────────────
+
+  getNotifications: () => safeApiCall(
+    () => core.get(CORE.NOTIFICATIONS.LIST).then(r => r.data?.items ?? []),
+    () => Promise.resolve([])
+  ),
+
+  markNotificationRead: (id) => safeApiCall(
+    () => core.post(CORE.NOTIFICATIONS.MARK_READ(id)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
+
+  markAllNotificationsRead: () => safeApiCall(
+    () => core.post(CORE.NOTIFICATIONS.MARK_ALL_READ).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 };
+
+// Alias for backward compatibility with code that uses the old getMasterProfile name
+profileService.getMasterProfile = profileService.getMyProfile;
+profileService.updateMasterProfile = profileService.updateMyProfile;
+profileService.getSubProfiles = profileService.getMySubProfiles;
 
 export default profileService;

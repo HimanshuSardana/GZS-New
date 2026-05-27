@@ -284,6 +284,106 @@ const buildGameRelated = (raw = {}, allGames = []) =>
 export const adaptGameRecord = (raw, context = {}) => {
     if (!raw) return null;
 
+    // ── Bridge: new gamepost schema shape → legacy adapter keys ──────────────
+    // When data comes from /api/cms/gameposts/:slug (Go backend, gamepost schema)
+    // it has flat arrays like gameplay_mechanics[], control_cards[], get_game[].
+    // We normalise these into the shape the existing section components expect.
+    if (raw.game_post_id !== undefined) {
+        // Flatten gameplay_mechanics into raw.gameplay (existing normalizer picks it up)
+        if (Array.isArray(raw.gameplay_mechanics) && raw.gameplay_mechanics.length > 0) {
+            raw = {
+                ...raw,
+                gameplay: raw.gameplay_mechanics.map(m => ({
+                    gameplay_title: m.title,
+                    gameplay_title_desc: m.description,
+                })),
+            };
+        }
+        // Flatten control_cards into raw.controls array for normalizeQuickControls
+        if (Array.isArray(raw.control_cards) && raw.control_cards.length > 0) {
+            raw = {
+                ...raw,
+                controls: raw.control_cards,
+                qco_title: raw.quick_control_overview?.qco_title,
+                qco_title_desc: raw.quick_control_overview?.qco_title_desc,
+            };
+        }
+        // Flatten get_game[] (array of store links) into purchase_links
+        if (Array.isArray(raw.get_game) && raw.get_game.length > 0) {
+            raw = {
+                ...raw,
+                purchase_links: raw.get_game.map(g => ({
+                    platform: g.platform_name,
+                    url: g.affiliate_link,
+                    price: g.price_label,
+                })),
+                // keep original array for GetGameSection direct use
+                get_game_links: raw.get_game,
+            };
+        }
+        // Flatten dlcs (new shape has dlc_title instead of name)
+        if (Array.isArray(raw.dlcs) && raw.dlcs.length > 0) {
+            raw = {
+                ...raw,
+                dlc: raw.dlcs.map(d => ({
+                    name: d.dlc_title,
+                    type: d.dlc_type,
+                    price: d.price_label,
+                    url: d.store_link,
+                })),
+            };
+        }
+        // awards_and_achievements: new shape has aa_title, aa_type
+        if (Array.isArray(raw.awards_and_achievements) && raw.awards_and_achievements.length > 0) {
+            raw = {
+                ...raw,
+                awards: raw.awards_and_achievements.map(a => ({
+                    aa_pt: `${a.aa_title}${a.year ? ` (${a.year})` : ''}${a.organisation ? ` — ${a.organisation}` : ''}`,
+                    label: a.aa_title,
+                    name: a.aa_title,
+                })),
+            };
+        }
+        // join_our_community: new shape is array, existing expects object with .links
+        if (Array.isArray(raw.join_our_community) && raw.join_our_community.length > 0) {
+            raw = {
+                ...raw,
+                join_community_links: raw.join_our_community,
+            };
+        }
+        // Flatten carousel items (new shape: yt_url / upload_url)
+        if (Array.isArray(raw.carousel) && raw.carousel.length > 0) {
+            raw = {
+                ...raw,
+                screenshots: raw.carousel
+                    .filter(c => c.media_type === 'image' || c.upload_url)
+                    .map(c => ({ url: c.upload_url, caption: c.caption })),
+                trailers: raw.carousel
+                    .filter(c => c.media_type === 'youtube' || c.yt_url)
+                    .map(c => ({ url: c.yt_url, title: c.caption })),
+            };
+        }
+        // critic_rating: new shape has numeric score directly
+        if (raw.critic_rating?.score !== undefined) {
+            raw = {
+                ...raw,
+                aggregate_score: raw.critic_rating.score,
+            };
+        }
+        // brand_color → feed into theme
+        if (raw.brand_color) {
+            raw = {
+                ...raw,
+                theme: {
+                    primary: raw.brand_color,
+                    primaryDark: raw.brand_color,
+                    primaryLight: raw.brand_color,
+                },
+            };
+        }
+    }
+    // ── End bridge ─────────────────────────────────────────────────────────────
+
     const title = raw.title || raw.hero?.game_title || 'Untitled Game';
     const slug = raw.slug || raw.meta?.slug || slugify(title);
     const platforms = normalizeGamePlatforms(raw);
@@ -338,6 +438,11 @@ export const adaptGameRecord = (raw, context = {}) => {
         system_requirement: normalizeSystemRequirement(raw),
         expert_reviews: expertReviews,
         user_reviews: userReviews,
+        awards_and_achievements: ensureArray(raw.awards_and_achievements || raw.awards).map(a =>
+            typeof a === 'string'
+                ? { aa_pt: a }
+                : { aa_pt: a.award || a.aa_pt || a.name || '', org: a.organisation, year: a.year }
+        ),
         critic_rating: raw.critic_rating || {
             score: Number(aggregateScore.toFixed(1)),
             label: buildRatingLabel(aggregateScore),
@@ -366,20 +471,21 @@ export const adaptGameRecord = (raw, context = {}) => {
             },
         },
         store_extras: raw.store_extras || {
-            proFeatures: dlcs.length > 0
-                ? dlcs.map((item) => `${item.name}${item.price ? ` · ${item.price}` : ''}`)
-                : [
-                    'Expanded cosmetic and progression bundles',
-                    'Optional premium unlocks synced with your profile',
-                    'Seasonal drops and event rewards tied to launch updates',
-                ],
-            bonuses: awards.length > 0
-                ? awards.map((item) => item.aa_pt || item.label || item.name)
-                : [
-                    'Verified profile achievements for major milestones',
-                    'Community recognition for featured challenge runs',
-                    'Publisher-curated extras surfaced alongside updates',
-                ],
+            dlcList: dlcs.length > 0 ? dlcs.map(item => ({
+                title:       item.title || item.name  || '',
+                type:        item.type  || 'DLC',
+                releaseDate: item.releaseDate || item.release_date || '',
+                description: item.description || '',
+                price:       item.price || '',
+                url:         item.url   || item.storeUrl || '',
+            })) : [],
+            awardList: awards.length > 0 ? awards.map(a => ({
+                award:        a.award || a.aa_pt || '',
+                organisation: a.organisation || a.org || '',
+                year:         a.year || '',
+            })) : [],
+            proFeatures: dlcs.length > 0 ? dlcs.map(item => `${item.title || item.name}${item.price ? ` · ${item.price}` : ''}`) : [],
+            bonuses:     awards.length > 0 ? awards.map(a => a.award || a.aa_pt) : [],
         },
         related_games: raw.related_games || buildGameRelated(raw, context.allGames || []),
         community_hub: raw.community_hub || {

@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import AdminNavbar from './AdminNavbar';
 import AdminSidebar from "./AdminSidebar";
+import AdminGlobalSearch from './AdminGlobalSearch';
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -16,6 +17,7 @@ const AdminLayout = () => {
           </div>
         </main>
       </div>
+      <AdminGlobalSearch />
     </div>
   );
 };

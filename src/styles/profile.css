@@ -1,4 +1,134 @@
+/* ── Handoff design tokens ─────────────────────────────── */
+
+/* Floating identity card that overlaps the banner */
+.identity-card-float {
+  position: relative;
+  margin-top: -64px;
+  z-index: 10;
+}
+
+/* Domain shard card — top color border + footer strip */
+.domain-shard-card {
+  background: var(--theme-card);
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.domain-shard-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+.domain-shard-card-footer {
+  padding: 10px 18px;
+  background: var(--slate-50, #F8FAFC);
+  border-top: 1px solid var(--slate-100, #F1F5F9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Large stats tile — handoff bold numbers */
+.stats-tile-lg {
+  background: var(--theme-card);
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  padding: 16px;
+}
+.stats-tile-lg-value {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: var(--font-heading, 'Archivo Black', sans-serif);
+  line-height: 1;
+}
+.stats-tile-lg-label {
+  font-size: 12px;
+  color: var(--slate-500);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Trust score badge */
+.badge-trust {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--green-50);
+  color: var(--green-600);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Level badges */
+.badge-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.lvl-hustler  { background: var(--violet-50);             color: var(--violet-600); }
+.lvl-pro      { background: var(--status-success-bg);     color: var(--status-success-text); }
+.lvl-extreme  { background: var(--orange-50);             color: var(--orange-600); }
+.lvl-beginner { background: var(--sky-50);                color: var(--sky-600); }
+.lvl-advanced { background: var(--status-danger-bg);      color: var(--status-danger-text); }
+
+/* Verified skill chip */
+.chip-verified {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--green-50);
+  color: var(--green-600);
+}
+
+/* Claim-more dashed card */
+.domain-claim-card {
+  border: 2px dashed var(--slate-300, #CBD5E1);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--slate-50, #F8FAFC);
+}
+
+.profile-stats-row { display:flex; align-items:center; flex-wrap:wrap; background:var(--theme-card); border-bottom:1px solid var(--theme-border); padding:0 24px; }
+.profile-stat-cell { display:flex; flex-direction:column; align-items:center; flex:1; gap:2px; padding:14px 0; min-width: 80px; }
+.profile-stat-cell + .profile-stat-cell { border-left:1px solid var(--theme-border); }
+.profile-stat-value { font-size:22px; font-weight:700; color:var(--theme-text); line-height:1; }
+.profile-stat-label { font-size:11px; color:var(--theme-text-subtle); text-transform:uppercase; letter-spacing:0.04em; }
+
+@media (max-width: 768px) {
+  .profile-stats-row {
+    padding: 0 12px;
+  }
+  .profile-stat-cell {
+    flex: 0 0 33.333%;
+    padding: 12px 0;
+    border-left: none !important;
+    border-top: 1px solid var(--theme-border);
+  }
+  .profile-stat-value { font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .profile-stat-cell {
+    flex: 0 0 50%;
+  }
+}
+
 @layer components {
+  .gzs-profile-card {
+    background-color: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: box-shadow 0.2s ease;
+  }
   /* ── PROFILE ARCHITECTURE ─────────────────────────────────────── */
   .pr-section-title {
     @apply text-base font-black uppercase tracking-[0.2em] text-[var(--theme-text)] mb-8 border-b-2 border-[var(--theme-border)] pb-4 italic;

@@ -1,37 +1,25 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/app/providers/AuthProvider';
-import PageLoader from '@/shared/components/PageLoader';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '@/app/providers/useAuth';
 
-/**
- * ProtectedRoute Component
- * ────────────────────────
- * Guards routes based on authentication status and roles.
- * Supports an optional 'adminOnly' prop for specialized access.
- */
-const ProtectedRoute = ({ adminOnly = false }) => {
-    const { isAuthenticated, isAdmin, loading } = useAuth();
-    const location = useLocation();
+export default function ProtectedRoute({ children, adminOnly = false }) {
+  const location = useLocation();
+  const { isAuthenticated, loading } = useAuth();
 
-    if (loading) {
-        return <PageLoader />;
-    }
+  // Wait for useProfileStore's initial fetch to finish before deciding whether
+  // to redirect. Without this guard a hard-refresh races: isLoading=true,
+  // isAuthenticated=false → premature logout redirect.
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
 
-    if (!isAuthenticated) {
-        // Redirect to login but save the attempted URL
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+  if (!isAuthenticated) {
+    const loginPath = adminOnly ? '/login?admin=true' : '/login';
+    return <Navigate to={loginPath} state={{ from: location.pathname }} replace />;
+  }
 
-    if (adminOnly && !isAdmin) {
-        // Logged in but not an admin - redirect to home or unauthorized page
-        return <Navigate to="/" replace />;
-    }
-
-    return <Outlet />;
-};
-
-export default ProtectedRoute;
-
-
-
-
-
+  return children ?? <Outlet />;
+}

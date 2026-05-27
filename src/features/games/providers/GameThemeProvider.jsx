@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect } from "react";
 
 /**
@@ -41,13 +42,13 @@ export function GameThemeProvider({ theme, children }) {
             "--gp-primary-alpha-high": hexToAlpha(theme.primary, 0.40),
             "--gp-bg-page": theme.bgPage || lighten(theme.primary, 0.95),
             "--gp-bg-section": theme.bgSection || lighten(theme.primary, 0.90),
-            "--gp-bg-card": theme.bgCard || "#0a0a0a",
-            "--gp-bg-card-alt": theme.bgCardAlt || "#121212",
+            "--gp-bg-card": "var(--theme-card)",
+            "--gp-bg-card-alt": "var(--theme-bg-alt)",
             "--gp-border": theme.border || "rgba(255,255,255,0.05)",
             "--gp-border-strong": "rgba(255,255,255,0.1)",
             "--gp-text-heading": theme.textHeading || "#ffffff",
-            "--gp-text-body": "#ededed",
-            "--gp-text-muted": "#a3a3a3",
+            "--gp-text-body": "var(--theme-text)",
+            "--gp-text-muted": "var(--theme-text-muted)",
             "--gp-text-on-accent": "#ffffff",
             "--gp-tag-bg": hexToAlpha(theme.primary, 0.10),
             "--gp-tag-border": theme.primary,
@@ -63,8 +64,7 @@ export function GameThemeProvider({ theme, children }) {
             "--gp-icon-circle-bg": lighten(theme.primary, 0.90),
             "--gp-icon-circle-fg": theme.primary,
             "--gp-cta-gradient": `linear-gradient(135deg, ${theme.primary} 0%, ${shadeColor(theme.primary, -20)} 100%)`,
-            "--gp-hero-overlay": "rgba(0, 0, 0, 0.65)",
-            "--gp-accent-bar": `3px solid ${theme.primary}`,
+"--gp-accent-bar": `3px solid ${theme.primary}`,
             "--gp-bg-glow": hexToAlpha(theme.primary, 0.06),
         };
 

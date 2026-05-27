@@ -1,90 +1,111 @@
 import { Link } from 'react-router-dom';
+import {
+  FiCode, FiAward, FiVideo, FiBriefcase, FiEdit2, FiFeather, FiMusic, FiChevronRight
+} from 'react-icons/fi';
 
 const DOMAIN_META = {
-  dev: { label: 'Dev', color: 'var(--domain-dev)' },
-  esports: { label: 'Esports', color: 'var(--domain-esports)' },
-  content: { label: 'Content', color: 'var(--domain-content)' },
-  business: { label: 'Business', color: 'var(--domain-business)' },
-  art: { label: 'Art', color: 'var(--domain-art)' },
-  writing: { label: 'Writing', color: 'var(--domain-writing)' },
-  audio: { label: 'Audio', color: 'var(--domain-audio)' },
-};
-
-const EXPERIENCE_LABELS = {
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced',
-  expert: 'Expert',
+  dev:      { label: 'Dev',      color: '#14B8A6', Icon: FiCode },
+  esports:  { label: 'Esports',  color: '#EF4444', Icon: FiAward },
+  content:  { label: 'Content',  color: '#F59E0B', Icon: FiVideo },
+  business: { label: 'Business', color: '#3B82F6', Icon: FiBriefcase },
+  art:      { label: 'Art',      color: '#EC4899', Icon: FiEdit2 },
+  writing:  { label: 'Writing',  color: '#22C55E', Icon: FiFeather },
+  audio:    { label: 'Audio',    color: '#64748B', Icon: FiMusic },
 };
 
 function getStatusConfig(isActive) {
-  if (isActive === true) return { label: 'Active', dot: 'bg-emerald-500' };
-  if (isActive === false) return { label: 'Dormant', dot: 'bg-slate-400' };
-  return { label: 'Idle', dot: 'bg-amber-500' };
+  if (isActive === true)  return { label: 'Active',   dot: '#22C55E', text: '#16A34A' };
+  if (isActive === false) return { label: 'Dormant',  dot: '#94A3B8', text: '#64748B' };
+  return                           { label: 'Idle',     dot: '#F59E0B', text: '#D97706' };
 }
 
-export default function SubProfileCard({ subProfile, isOwn, username, skills = [] }) {
-  const meta = DOMAIN_META[subProfile.type] || DOMAIN_META.dev;
+export default function SubProfileCard({ subProfile, isOwn, username, skills = [], isLocked = false }) {
+  const domainKey = subProfile.type || subProfile.domain || 'dev';
+  const meta = DOMAIN_META[domainKey] || DOMAIN_META.dev;
+  const { Icon } = meta;
   const status = getStatusConfig(subProfile.is_active);
-  const orderedSkills = [...skills].sort((a, b) => Number(b.verified) - Number(a.verified)).slice(0, 3);
+  const orderedSkills = [...skills].sort((a, b) => Number(b.verified ?? b.is_verified) - Number(a.verified ?? a.is_verified)).slice(0, 3);
+  const verifiedCount = skills.filter(s => s.verified ?? s.is_verified).length;
 
   return (
     <article
-      className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-      style={{ borderLeft: `4px solid ${meta.color}` }}
+      className={`domain-shard-card${isLocked ? ' blur-sm pointer-events-none' : ''}`}
+      style={{ borderTop: `4px solid ${meta.color}` }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <span
-            className="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-            style={{ backgroundColor: `${meta.color}18`, color: meta.color }}
+      <div className="p-[18px]">
+        {/* Header row: icon + status */}
+        <div className="flex justify-between items-start mb-3.5">
+          <div
+            className="flex items-center justify-center rounded-xl"
+            style={{ width: 44, height: 44, background: `${meta.color}1A`, color: meta.color }}
           >
-            {meta.label}
-          </span>
-          <h3 className="mt-4 text-xl font-semibold text-slate-900">{subProfile.username}</h3>
-          <p className="mt-1 text-sm text-slate-500">{subProfile.primary_role}</p>
+            <Icon size={22} />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: status.text }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: status.dot }} />
+            {status.label}
+          </div>
         </div>
 
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-          {EXPERIENCE_LABELS[subProfile.experience_level] || subProfile.experience_level}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {orderedSkills.map((skill) => (
-          <span
-            key={skill.id}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              skill.verified ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'
-            }`}
-          >
-            {skill.name}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-5 flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 text-sm text-slate-500">
-          <span className={`h-2.5 w-2.5 rounded-full ${status.dot}`} />
-          <span>{status.label}</span>
+        {/* Role & handle */}
+        <div className="text-lg font-extrabold tracking-tight mb-0.5" style={{ color: '#0F172A', letterSpacing: '-0.01em' }}>
+          {subProfile.primary_role || subProfile.username}
+        </div>
+        <div className="text-xs font-medium mb-3" style={{ color: meta.color }}>
+          @{subProfile.username}
         </div>
 
-        <div className="flex items-center gap-2">
-          {isOwn ? (
-            <Link
-              to={`/profile/${subProfile.type}/edit`}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-violet-300 hover:text-violet-700"
-            >
-              Edit
-            </Link>
-          ) : null}
+        {/* Skill chips */}
+        {orderedSkills.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3.5">
+            {orderedSkills.map((skill) => (
+              <span
+                key={skill.id}
+                className={(skill.verified ?? skill.is_verified) ? 'chip-verified' : ''}
+                style={
+                  !(skill.verified ?? skill.is_verified)
+                    ? { display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: '#F1F5F9', color: '#475569' }
+                    : {}
+                }
+              >
+                {skill.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Stats row */}
+        <div
+          className="flex justify-between text-xs pt-3"
+          style={{ borderTop: '1px solid #F1F5F9', color: '#64748B' }}
+        >
+          <span>
+            <b style={{ color: '#0F172A' }}>{verifiedCount}</b> verified skills
+          </span>
+          <span>
+            <b style={{ color: '#0F172A' }}>{subProfile.projects_count ?? 0}</b> projects
+          </span>
+        </div>
+      </div>
+
+      {/* Card footer */}
+      <div className="domain-shard-card-footer">
+        <Link
+          to={isOwn ? `/profile/${domainKey}` : `/u/${username || subProfile.username}`}
+          className="flex items-center gap-1 text-sm font-semibold"
+          style={{ color: meta.color }}
+        >
+          Open Sub-Profile <FiChevronRight size={13} />
+        </Link>
+        {isOwn && (
           <Link
-            to={isOwn ? `/profile/${subProfile.type}` : `/u/${username || subProfile.username}`}
-            className="rounded-xl bg-violet-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-violet-600"
+            to={`/profile/${domainKey}/edit`}
+            className="flex items-center justify-center rounded-lg transition hover:bg-slate-200"
+            style={{ width: 28, height: 28, color: '#64748B' }}
           >
-            View {'->'}
+            <FiEdit2 size={13} />
           </Link>
-        </div>
+        )}
       </div>
     </article>
   );

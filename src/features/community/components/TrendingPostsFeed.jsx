@@ -1,57 +1,80 @@
-import React from 'react';
-import { FiTrendingUp, FiZap } from 'react-icons/fi';
-import { useCommunity } from '@/services/mutators/useCommunity';
-import PostCard from '@/features/profile/components/PostCard';
+import React, { useState } from 'react';
+import { FiTrendingUp, FiHeart, FiMessageCircle } from 'react-icons/fi';
+import { MOCK_TRENDING_POSTS } from '@/shared/data/communityData';
+
+const FILTERS = [
+    { label: 'Last 24h', value: '24h' },
+    { label: 'This week', value: 'week' },
+    { label: 'All time', value: 'all' },
+];
 
 const TrendingPostsFeed = () => {
-    const { useTrendingPosts } = useCommunity();
-    const { data: posts, isLoading } = useTrendingPosts({ period: '24h', limit: 5 });
+    const [activeFilter, setActiveFilter] = useState('24h');
 
     return (
-        <section className="space-y-12">
-            <div className="flex items-center justify-between px-10">
-                <div className="space-y-2">
-                    <p className="text-xs font-black uppercase tracking-widest text-[var(--theme-primary)] italic opacity-60">ENGAGEMENT_PEAK</p>
-                    <h3 className="text-4xl font-black uppercase tracking-tighter italic text-[var(--theme-text)] flex items-center gap-8">
-                        <FiTrendingUp className="text-[var(--theme-primary)]" /> TRENDING_DISPATCH
-                    </h3>
+        <section>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <FiTrendingUp className="text-[var(--theme-primary)]" size={16} />
+                    <h3 className="text-sm font-bold text-[var(--theme-text)]">Trending Posts</h3>
                 </div>
-                <div className="flex items-center gap-4">
-                     <span className="text-xs font-black uppercase tracking-wider text-[var(--theme-text-muted)] italic opacity-30">ALGO_V4_SYNC</span>
-                     <div className="w-2 h-2 bg-[var(--theme-primary)] rounded-full animate-ping" />
+                <div className="flex gap-1">
+                    {FILTERS.map((f) => (
+                        <button
+                            key={f.value}
+                            onClick={() => setActiveFilter(f.value)}
+                            className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                                activeFilter === f.value
+                                    ? 'bg-[var(--theme-primary)] text-[var(--theme-text-inverse)]'
+                                    : 'bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] border border-[var(--theme-border)] hover:border-[var(--theme-border-strong)] hover:text-[var(--theme-text)]'
+                            }`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <div className="space-y-8">
-                {isLoading ? (
-                    <div className="py-20 flex justify-center">
-                        <div className="w-8 h-8 border-4 border-[var(--theme-primary)] border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-3">
+                {MOCK_TRENDING_POSTS.map((post) => (
+                    <div
+                        key={post.id}
+                        className="rounded-xl border border-[var(--theme-border)]/50 bg-[var(--theme-bg-alt)]/50 p-4 hover:border-[var(--theme-border-strong)] hover:bg-[var(--theme-bg-alt)]/70 transition cursor-pointer"
+                    >
+                        <div className="flex items-center gap-2.5 mb-2">
+                            <img
+                                src={post.author.avatar_url}
+                                alt={post.author.display_name}
+                                className="w-6 h-6 rounded-full object-cover"
+                            />
+                            <span className="text-sm font-semibold text-[var(--theme-text)]">{post.author.display_name}</span>
+                            <span
+                                className="ml-auto px-2 py-0.5 rounded-md text-[11px] font-bold"
+                                style={{ backgroundColor: `${post.branch_color}25`, color: post.branch_color }}
+                            >
+                                {post.branch_label}
+                            </span>
+                        </div>
+
+                        <p className="text-sm text-[var(--theme-text)] line-clamp-2">
+                            {post.content.length > 100 ? `${post.content.slice(0, 100)}…` : post.content}
+                        </p>
+
+                        <div className="flex items-center gap-4 mt-3 text-xs text-[var(--theme-text-muted)]">
+                            <span className="flex items-center gap-1.5">
+                                <FiHeart size={11} />
+                                {post.likes.toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <FiMessageCircle size={11} />
+                                {post.comments}
+                            </span>
+                        </div>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-8">
-                        {posts?.map((post, idx) => (
-                            <PostCard key={post.id || idx} post={post} />
-                        ))}
-                    </div>
-                )}
+                ))}
             </div>
-            
-            {!isLoading && (!posts || posts.length === 0) && (
-                <div className="py-20 text-center bg-[var(--theme-card)]/40 rounded-3xl border-4 border-dashed border-[var(--theme-border)]">
-                    <FiZap size={48} className="mx-auto text-[var(--theme-text-muted)] opacity-20 mb-6" />
-                    <p className="text-xl font-black uppercase tracking-tighter text-[var(--theme-text-muted)]">No Trending Activity</p>
-                </div>
-            )}
         </section>
     );
 };
 
 export default TrendingPostsFeed;
-
-
-
-
-
-
-
-

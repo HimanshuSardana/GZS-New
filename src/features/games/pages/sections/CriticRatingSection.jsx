@@ -1,68 +1,115 @@
-export default function CriticRatingSection({ criticRating }) {
-    if (!criticRating) return null;
+const DESCRIPTOR_COLORS = {
+  outstanding: '#22C55E',
+  excellent: '#22C55E',
+  great: '#3B82F6',
+  good: '#3B82F6',
+  mixed: '#F59E0B',
+  poor: '#EF4444',
+};
 
-    return (
-        <section className="container-global section-padding relative">
+function StarRating({ score }) {
+  const raw = (score / 10) * 5;
+  const filled = Math.floor(raw);
+  const half = raw - filled >= 0.5 ? 1 : 0;
+  const empty = 5 - filled - half;
 
-            <div className="bg-white/60 backdrop-blur-3xl border border-[var(--gp-border)] rounded-3xl px-12 py-16 flex flex-col lg:flex-row items-center justify-between gap-12 shadow-[0_15px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] transition-shadow duration-500 relative overflow-hidden gp-animate-in group">
-
-                {/* Diagonal slice effect */}
-                <div className="absolute top-0 left-0 w-[150%] h-full bg-gradient-to-r from-[var(--gp-primary)]/5 to-transparent skew-x-[-35deg] translate-x-[-20%] pointer-events-none" />
-
-                {/* Subtle pattern overlay */}
-                <div className="absolute inset-0 bg-[radial-gradient(var(--gp-border)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none opacity-50"></div>
-
-                {/* Left Content */}
-                <div className="relative z-10 text-center lg:text-left flex-1 pl-4 border-l-4 border-[var(--gp-primary)]/30 hidden md:block group-hover:border-[var(--gp-primary)] transition-colors">
-                    <h2 className="gp-hero-title text-4xl lg:text-5xl text-[var(--theme-text)] mb-4 tracking-widest">
-                        CRITIC RATING
-                    </h2>
-
-                    <p className="text-sm font-black text-[var(--gp-primary)] uppercase tracking-wide">
-                        Login as a certified critic to contribute to the score
-                    </p>
-                </div>
-
-                {/* Mobile version without border */}
-                <div className="relative z-10 text-center md:hidden w-full">
-                    <h2 className="gp-hero-title text-4xl text-[var(--theme-text)] mb-4 tracking-widest">
-                        CRITIC RATING
-                    </h2>
-                    <p className="text-xs font-black text-[var(--gp-primary)] uppercase tracking-tight">
-                        Login as a certified critic to contribute
-                    </p>
-                </div>
-
-                {/* GZS Score Display */}
-                <div className="relative z-10 flex flex-col items-center gap-6">
-                    <div className="text-center">
-                        <p className="text-xs font-black uppercase tracking-wider text-[var(--gp-primary)] mb-3 opacity-70">GZS Score</p>
-                        <div className="flex items-end gap-3 justify-center">
-                            <span className="text-7xl font-black text-[var(--theme-text)] leading-none">{criticRating.score}</span>
-                            <span className="text-2xl text-[var(--theme-text-muted)] mb-2">/10</span>
-                        </div>
-                        <p className="text-sm font-bold text-[var(--gp-primary)] mt-2 uppercase tracking-wider">{criticRating.label}</p>
-                        <div className="flex gap-1 justify-center mt-3">
-                            {[1, 2, 3, 4, 5].map(i => (
-                                <span key={i} className="text-xl" style={{ color: i <= 4 ? 'var(--gp-primary)' : '#e5e7eb' }}>★</span>
-                            ))}
-                        </div>
-                    </div>
-                    <a href={criticRating.signupHref || '/signup'} className="px-6 py-3 bg-[var(--gp-primary)] text-white text-xs font-bold rounded-xl hover:bg-[var(--gp-primaryDark)] transition-all uppercase tracking-wider">
-                        Sign Up to Write a Critics Review
-                    </a>
-                </div>
-
-            </div>
-
-        </section>
-    );
+  return (
+    <div className="flex gap-0.5 justify-center">
+      {Array.from({ length: filled }, (_, i) => (
+        <span key={`f${i}`} style={{ color: 'var(--gp-primary)', fontSize: '1.25rem' }}>★</span>
+      ))}
+      {half === 1 && (
+        <span
+          style={{
+            background: 'linear-gradient(90deg, var(--gp-primary) 50%, var(--gp-border, #E2E8F0) 50%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontSize: '1.25rem',
+          }}
+        >★</span>
+      )}
+      {Array.from({ length: empty }, (_, i) => (
+        <span key={`e${i}`} style={{ color: 'var(--gp-border, #E2E8F0)', fontSize: '1.25rem' }}>★</span>
+      ))}
+    </div>
+  );
 }
 
+export default function CriticRatingSection({ score, descriptor, expertReviews = [], gameSlug }) {
+  const descriptorColor = descriptor
+    ? (DESCRIPTOR_COLORS[descriptor.toLowerCase()] ?? '#6B7280')
+    : '#6B7280';
 
+  const writeReviewHref = `/write-blog${gameSlug ? `?game=${gameSlug}` : ''}`;
 
+  return (
+    <section className="gp-content-section">
+      <div
+        className="rounded-3xl border overflow-hidden"
+        style={{ borderColor: 'var(--gp-border, #E2E8F0)', background: 'var(--theme-card, #fff)' }}
+      >
+        {/* Score block */}
+        <div className="flex flex-col items-center gap-4 px-8 py-10">
+          {score != null ? (
+            <>
+              <p
+                className="text-xs font-black uppercase tracking-wider opacity-60"
+                style={{ color: 'var(--gp-primary)' }}
+              >
+                GZS Score
+              </p>
 
+              <div className="flex items-end gap-2 justify-center">
+                <span className="gp-score-badge">{score}</span>
+                <span className="text-2xl mb-2" style={{ color: 'var(--theme-text-muted, #9ca3af)' }}>
+                  /&nbsp;10
+                </span>
+              </div>
 
+              <StarRating score={Number(score)} />
 
+              {descriptor && (
+                <span
+                  className="px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider text-white"
+                  style={{ backgroundColor: descriptorColor }}
+                >
+                  {descriptor}
+                </span>
+              )}
 
+              <p className="text-sm" style={{ color: 'var(--theme-text-muted, #9ca3af)' }}>
+                GZS Score — based on {expertReviews.length} expert review{expertReviews.length !== 1 ? 's' : ''}
+              </p>
+            </>
+          ) : (
+            <p className="text-lg font-semibold" style={{ color: 'var(--theme-text-muted, #9ca3af)' }}>
+              No score yet
+            </p>
+          )}
+        </div>
 
+        {/* CTA block */}
+        <div
+          className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-6 border-t"
+          style={{ borderColor: 'var(--gp-border, #E2E8F0)' }}
+        >
+          <div>
+            <p className="font-bold text-base" style={{ color: 'var(--theme-text, #0F172A)' }}>
+              Want to write the critics review?
+            </p>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--theme-text-muted, #9ca3af)' }}>
+              Publish a review blog on GzoneSphere and get featured.
+            </p>
+          </div>
+          <a
+            href={writeReviewHref}
+            className="shrink-0 px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90"
+            style={{ background: 'var(--gp-primary, #E53935)' }}
+          >
+            Write a Review
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}

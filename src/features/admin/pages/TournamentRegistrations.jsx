@@ -53,56 +53,56 @@ export default function TournamentRegistrations() {
                 <div className="absolute bottom-[10%] left-[-5%] w-[40%] h-[40%] bg-[var(--theme-secondary)]/5 blur-[100px] rounded-full" />
             </div>
 
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-12 relative z-10 px-2">
-                <div className="flex items-center gap-10">
+            <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 md:gap-12 relative z-10 px-2">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
                     <button
                         onClick={() => navigate('/admin/tournaments')}
-                        className="w-16 h-16 bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-[1.8rem] border-2 border-[var(--theme-border)] flex items-center justify-center text-[var(--theme-text-muted)] hover:text-[var(--theme-primary)] hover:border-[var(--theme-primary)]/30 transition-all shadow-2xl hover:scale-110 active:scale-95 group"
+                        className="w-12 h-12 md:w-16 md:h-16 bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-2xl md:rounded-[1.8rem] border-2 border-[var(--theme-border)] flex items-center justify-center text-[var(--theme-text-muted)] hover:text-[var(--theme-primary)] hover:border-[var(--theme-primary)]/30 transition-all shadow-2xl hover:scale-110 active:scale-95 group"
                     >
-                        <FiArrowLeft size={24} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
+                        <FiArrowLeft size={20} md:size={24} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-6 group">
-                            <div className="w-16 h-1 bg-[var(--status-success)] rounded-full animate-pulse shadow-[0_0_15px_rgba(var(--status-success-rgb),0.5)]" />
-                            <span className="text-sm font-black uppercase tracking-widest text-[var(--status-success)] italic leading-none opacity-80">v4.08_ATHLETE_AUDIT</span>
+                    <div className="space-y-4 md:space-y-8">
+                        <div className="flex items-center gap-4 md:gap-6 group">
+                            <div className="w-12 md:w-16 h-1 bg-[var(--status-success)] rounded-full animate-pulse shadow-[0_0_15px_rgba(var(--status-success-rgb),0.5)]" />
+                            <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-[var(--status-success)] italic leading-none opacity-80">v4.08_ATHLETE_AUDIT</span>
                         </div>
-                        <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter italic leading-[0.8] text-[var(--theme-text)]">Registrar <br/><span className="text-transparent opacity-20">ENROLLMENT</span></h1>
+                        <h1 className="text-5xl md:text-7xl lg:text-9xl font-black uppercase tracking-tighter italic leading-[0.9] md:leading-[0.8] text-[var(--theme-text)]">Registrar <br/><span className="text-transparent opacity-20">ENROLLMENT</span></h1>
                     </div>
                 </div>
 
-                <div className="bg-[var(--theme-bg-alt)]/60 rounded-3xl p-10 border-2 border-[var(--theme-border)] shadow-inner space-y-4 text-right min-w-[280px] relative z-10 overflow-hidden">
-                    <p className="text-xs font-black text-[var(--theme-text-muted)] uppercase tracking-widest italic opacity-30 leading-none flex justify-between items-center gap-4">CIRCUIT_UUID: <span className="text-[var(--theme-text)] opacity-60 tabular-nums">0X_{id?.toUpperCase()}</span></p>
+                <div className="bg-[var(--theme-bg-alt)]/60 rounded-3xl p-6 md:p-10 border-2 border-[var(--theme-border)] shadow-inner space-y-4 text-left lg:text-right min-w-[240px] md:min-w-[280px] relative z-10 overflow-hidden">
+                    <p className="text-[10px] md:text-xs font-black text-[var(--theme-text-muted)] uppercase tracking-widest italic opacity-30 leading-none flex justify-between items-center gap-4">CIRCUIT_UUID: <span className="text-[var(--theme-text)] opacity-60 tabular-nums">0X_{id?.toUpperCase()}</span></p>
                     <div className="h-[1px] bg-gradient-to-r from-transparent via-[var(--theme-border)] to-transparent" />
-                    <p className="text-xs font-black text-[var(--theme-text-muted)] uppercase tracking-widest italic opacity-30 leading-none flex justify-between items-center gap-4">TOTAL_ENTRY: <span className="text-[var(--theme-text)] opacity-60 tabular-nums">{counts.all}</span></p>
+                    <p className="text-[10px] md:text-xs font-black text-[var(--theme-text-muted)] uppercase tracking-widest italic opacity-30 leading-none flex justify-between items-center gap-4">TOTAL_ENTRY: <span className="text-[var(--theme-text)] opacity-60 tabular-nums">{counts.all}</span></p>
                     <FiLayers size={150} className="absolute bottom-[-40px] left-[-40px] text-[var(--theme-text)] opacity-[0.03] -rotate-12" />
                 </div>
             </header>
 
             {/* Tactical Navigation Sub-Bridge */}
-            <div className="bg-[var(--theme-bg-alt)]/50 backdrop-blur-xl rounded-full p-4 border-2 border-[var(--theme-border)] shadow-inner relative z-10 mx-2 flex flex-col xl:flex-row gap-6">
+            <div className="bg-[var(--theme-bg-alt)]/50 backdrop-blur-xl rounded-3xl md:rounded-full p-4 md:p-6 border-2 border-[var(--theme-border)] shadow-inner relative z-10 mx-2 flex flex-col xl:flex-row gap-6">
                 <div className="flex flex-wrap gap-4 flex-1">
                     {Object.entries(counts).map(([status, count]) => (
                         <button
                             key={status}
                             onClick={() => setFilter(status)}
-                            className={`flex-1 min-w-[150px] flex flex-col items-center justify-center gap-2 py-6 rounded-[2.2rem] text-xs font-black uppercase tracking-wider transition-all italic leading-none ${
+                            className={`flex-1 min-w-[120px] md:min-w-[150px] flex flex-col items-center justify-center gap-2 py-4 md:py-6 rounded-2xl md:rounded-[2.2rem] text-[10px] md:text-xs font-black uppercase tracking-wider transition-all italic leading-none ${
                                 filter === status
                                     ? 'bg-[var(--theme-card)] text-[var(--theme-primary)] shadow-2xl border-2 border-[var(--theme-border)]'
                                     : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] opacity-40 hover:opacity-100'
                             }`}
                         >
-                            <span className="text-2xl font-black tabular-nums">{count}</span>
+                            <span className="text-xl md:text-2xl font-black tabular-nums">{count}</span>
                             {status}_ENTRIES
                         </button>
                     ))}
                 </div>
                 
-                <div className="flex items-center gap-6 bg-[var(--theme-card)]/80 border-2 border-[var(--theme-border)] rounded-3xl px-10 py-4 shadow-2xl group/search xl:min-w-[400px]">
-                    <FiSearch size={24} strokeWidth={3} className="text-[var(--theme-primary)] opacity-40 group-focus-within/search:opacity-100 group-focus-within/search:scale-110 transition-all duration-500" />
+                <div className="flex items-center gap-4 md:gap-6 bg-[var(--theme-card)]/80 border-2 border-[var(--theme-border)] rounded-2xl md:rounded-3xl px-6 md:px-10 py-3 md:py-4 shadow-2xl group/search xl:min-w-[400px]">
+                    <FiSearch size={20} md:size={24} strokeWidth={3} className="text-[var(--theme-primary)] opacity-40 group-focus-within/search:opacity-100 group-focus-within/search:scale-110 transition-all duration-500" />
                     <input
                         type="text"
                         placeholder="TRACE_ATHLETE_SIGNATURE..."
-                        className="py-4 bg-transparent text-sm font-black italic text-[var(--theme-text)] outline-none flex-1 placeholder:text-[var(--theme-text-muted)] placeholder:opacity-20 uppercase tracking-wide"
+                        className="py-2 md:py-4 bg-transparent text-xs md:text-sm font-black italic text-[var(--theme-text)] outline-none flex-1 placeholder:text-[var(--theme-text-muted)] placeholder:opacity-20 uppercase tracking-wide"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
@@ -110,33 +110,33 @@ export default function TournamentRegistrations() {
             </div>
 
             {/* Audit Manifest */}
-            <div className="bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-full border-2 border-[var(--theme-border)] overflow-hidden shadow-2xl relative z-10 mx-2 group/manifest">
-                <div className="p-16 border-b-2 border-dashed border-[var(--theme-border)] flex items-center justify-between">
-                     <div className="flex items-center gap-8">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-[var(--theme-bg-alt)] border-2 border-[var(--theme-border)] flex items-center justify-center text-[var(--status-success)] shadow-inner"><FiShield size={28} strokeWidth={3} /></div>
-                        <h3 className="text-base font-black uppercase tracking-widest text-[var(--theme-text-muted)] italic leading-none opacity-40">ENROLLMENT_AUDIT_LEDGER_v4</h3>
+            <div className="bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-[2rem] md:rounded-full border-2 border-[var(--theme-border)] overflow-hidden shadow-2xl relative z-10 mx-2 group/manifest">
+                <div className="p-8 md:p-16 border-b-2 border-dashed border-[var(--theme-border)] flex items-center justify-between">
+                     <div className="flex items-center gap-6 md:gap-8">
+                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-[var(--theme-bg-alt)] border-2 border-[var(--theme-border)] flex items-center justify-center text-[var(--status-success)] shadow-inner"><FiShield size={24} md:size={28} strokeWidth={3} /></div>
+                        <h3 className="text-xs md:text-base font-black uppercase tracking-widest text-[var(--theme-text-muted)] italic leading-none opacity-40">ENROLLMENT_AUDIT_LEDGER_v4</h3>
                      </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto scrollbar-none">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr className="border-b-2 border-dashed border-[var(--theme-border)]/50">
-                                <th className="pl-16 py-12 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">ATHLETE_SHARD</th>
-                                <th className="py-12 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">OPERATIVE_ROSTER</th>
-                                <th className="py-12 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">DATA_PAYLOAD</th>
-                                <th className="py-12 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic text-center">PROTOCOL_STATUS</th>
-                                <th className="py-12 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">SYNC_STAMP</th>
-                                <th className="pr-16 py-12 text-right text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">AUDIT_ACTIONS</th>
+                                <th className="pl-8 md:pl-16 py-8 md:py-12 text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">ATHLETE_SHARD</th>
+                                <th className="py-8 md:py-12 text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">OPERATIVE_ROSTER</th>
+                                <th className="py-8 md:py-12 text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">DATA_PAYLOAD</th>
+                                <th className="py-8 md:py-12 text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic text-center">PROTOCOL_STATUS</th>
+                                <th className="py-8 md:py-12 text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">SYNC_STAMP</th>
+                                <th className="pr-8 md:pr-16 py-8 md:py-12 text-right text-[10px] md:text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-30 italic">AUDIT_ACTIONS</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y-2 divide-dashed divide-[var(--theme-border)]/30">
                             <AnimatePresence mode="popLayout">
                                 {filtered.length === 0 ? (
                                     <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <td colSpan="6" className="text-center py-40 space-y-8">
-                                            <FiActivity size={80} className="mx-auto text-[var(--theme-primary)] opacity-10 animate-pulse" />
-                                            <p className="text-[18px] font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-20 italic ">MANIFEST_RECORDS_NULL</p>
+                                        <td colSpan="6" className="text-center py-24 md:py-40 space-y-6 md:space-y-8">
+                                            <FiActivity size={60} md:size={80} className="mx-auto text-[var(--theme-primary)] opacity-10 animate-pulse" />
+                                            <p className="text-base md:text-[18px] font-black uppercase tracking-widest text-[var(--theme-text-muted)] opacity-20 italic ">MANIFEST_RECORDS_NULL</p>
                                         </td>
                                     </motion.tr>
                                 ) : filtered.map((reg, idx) => {

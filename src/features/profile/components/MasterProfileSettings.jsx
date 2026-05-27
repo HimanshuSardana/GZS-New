@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FiUser, FiMail, FiGlobe, FiInfo, FiCamera, FiBriefcase, FiUsers, FiCalendar, FiCheckCircle } from 'react-icons/fi';
 import { useProfile } from '@/services/mutators/useProfile';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { 
     FiAward, FiPlus, FiX, FiCheck, FiExternalLink, FiTerminal, FiActivity, FiGlobe, 
@@ -43,7 +43,7 @@ export default function SponsorsManagement() {
         setSaving(true);
         try {
             await mockApiService.updateSponsor('new-' + Date.now(), modalForm);
-            queryClient.invalidateQueries(['admin', 'sponsors']);
+            queryClient.invalidateQueries({ queryKey: ['admin', 'sponsors'] });
             showToast('Sponsor added successfully!', 'success');
             setShowModal(false);
         } catch {
@@ -53,8 +53,8 @@ export default function SponsorsManagement() {
         }
     };
 
-    const inputClass = "w-full bg-[var(--theme-bg-alt)]/50 border-2 border-[var(--theme-border)] rounded-2xl px-6 py-4 text-sm font-black italic text-[var(--theme-text)] outline-none focus:border-[var(--theme-primary)] focus:ring-4 focus:ring-[var(--theme-primary)]/10 transition-all placeholder:text-[var(--theme-text-muted)] placeholder:opacity-20 uppercase tracking-widest";
-    const labelClass = "block text-xs  uppercase tracking-widest text-[var(--theme-text-muted)] mb-2.5 italic opacity-40 leading-none";
+    const inputClass = "admin-input";
+    const labelClass = "admin-label";
 
     if (isLoading) {
         return (
@@ -92,7 +92,7 @@ export default function SponsorsManagement() {
                     </div>
                     <button
                         onClick={handleOpenModal}
-                        className="bg-[var(--theme-text)] text-[var(--theme-bg)] px-12 py-6 rounded-full text-sm font-black uppercase tracking-widest italic hover:bg-[var(--theme-primary)] hover:text-white hover:scale-105 active:scale-95 transition-all flex items-center gap-6 shadow-2xl border-4 border-white/5 group"
+                        className="admin-btn !px-12 !py-6 group"
                     >
                         <FiPlus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" /> INTEGRATE_NEW_PARTNER
                     </button>
@@ -109,14 +109,21 @@ export default function SponsorsManagement() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.05 }}
-                                className="bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-3xl border-2 border-[var(--theme-border)] p-10 shadow-2xl hover:border-[var(--theme-primary)]/40 hover:-translate-y-2 transition-all group relative overflow-hidden"
+                                className="admin-card !p-10 group relative overflow-hidden"
                             >
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--theme-primary)] opacity-5 rounded-full blur-[40px] -mr-16 -mt-16" />
                                 <div className="flex items-start justify-between mb-10">
                                     <div className="w-20 h-20 rounded-[1.8rem] bg-[var(--theme-bg-alt)] border-2 border-[var(--theme-border)] flex items-center justify-center text-3xl font-black text-[var(--theme-text)] italic shadow-inner group-hover:bg-[var(--theme-card)] transition-colors">
                                         {s.name[0]}
                                     </div>
-                                    <span className={`text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl border-2 italic leading-none ${s.status === 'Active' ? 'bg-[var(--status-success-soft)] text-[var(--status-success)] border-[var(--status-success)]/10' : 'bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] border-[var(--theme-border)] opacity-40'}`}>
+                                    <span 
+                                        className="admin-status-badge"
+                                        style={
+                                          s.status === 'Active' 
+                                            ? { background: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                                            : { background: 'var(--status-draft-bg)', color: 'var(--status-draft-text)' }
+                                        }
+                                    >
                                         {s.status?.toUpperCase() || 'ACTIVE'}
                                     </span>
                                 </div>
@@ -188,10 +195,10 @@ export default function SponsorsManagement() {
                                     <input className={inputClass} value={modalForm.website_url} onChange={e => setModalForm(prev => ({ ...prev, website_url: e.target.value }))} placeholder="HTTPS://PARTNER_PORTAL.COM" />
                                 </div>
                             </div>
-                            <div className="p-12 pt-0 flex gap-6">
-                                <button onClick={() => setShowModal(false)} className="flex-1 py-6 rounded-2xl bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] text-xs font-black uppercase tracking-widest italic border-2 border-[var(--theme-border)] hover:bg-[var(--theme-card)] transition-all">CANCEL_PROC</button>
+                             <div className="p-12 pt-0 flex gap-6">
+                                <button onClick={() => setShowModal(false)} className="admin-btn flex-1">CANCEL_PROC</button>
                                 <button onClick={handleModalSave} disabled={saving}
-                                    className="flex-[2] py-6 rounded-2xl bg-[var(--theme-text)] text-[var(--theme-bg)] text-xs font-black uppercase tracking-widest italic border-4 border-white/5 hover:bg-[var(--theme-primary)] hover:text-white hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-6">
+                                    className="admin-btn flex-[2]">
                                     {saving ? 'SYNCING...' : <><FiCheck size={18} strokeWidth={3} /> EXECUTE_INTEGRATION</>}
                                 </button>
                             </div>
@@ -205,7 +212,7 @@ export default function SponsorsManagement() {
 
 function TelemetryCard({ label, value, icon, color }) {
     return (
-        <div className="bg-[var(--theme-card)]/80 backdrop-blur-3xl rounded-3xl border-2 border-[var(--theme-border)] p-10 shadow-2xl space-y-4 hover:border-[var(--theme-primary)]/40 hover:-translate-y-2 transition-all group overflow-hidden relative">
+        <div className="admin-card !p-10 group overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--theme-primary)] opacity-5 rounded-full blur-[40px] -mr-16 -mt-16" />
             <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[var(--theme-text-muted)] italic opacity-30 leading-none group-hover:text-[var(--theme-primary)] transition-colors group-hover:opacity-60">
                  {React.cloneElement(icon, { size: 16, strokeWidth: 3, className: 'animate-pulse' })} {label}

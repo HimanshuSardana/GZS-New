@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams, Outlet } from 'react-router-dom';
 import { FiSearch, FiEdit2, FiCheck, FiMoreHorizontal, FiZap, FiPlusCircle, FiActivity, FiGlobe, FiShield, FiUser, FiTerminal, FiCpu, FiHash } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme, usePageTheme } from '@/app/providers/ThemeProvider';
@@ -8,7 +8,6 @@ import ConversationsList from './ConversationsList';
 export default function MessagingHub() {
     usePageTheme('profile');
     const { userId } = useParams();
-    const navigate = useNavigate();
     const { setThemeVariant } = useTheme();
 
     useEffect(() => {
@@ -25,18 +24,17 @@ export default function MessagingHub() {
             `}>
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[var(--theme-primary)]/5 blur-[100px] rounded-full pointer-events-none -mr-48 -mt-48" />
                 
-                <header className="p-10 border-b-2 border-dashed border-[var(--theme-border)] space-y-12 bg-[var(--theme-card)]/80 backdrop-blur-3xl sticky top-0 z-10">
+                <header className="p-5 border-b border-[var(--theme-border)] space-y-12 bg-[var(--theme-card)]/80 backdrop-blur-3xl sticky top-0 z-10">
                     <div className="flex items-center justify-between">
                         <div className="space-y-6">
                             <div className="flex items-center gap-5">
                                 <div className="w-3 h-3 bg-[var(--theme-primary)] rounded-full animate-ping" />
-                                <span className="text-sm font-black uppercase tracking-widest text-[var(--theme-primary)] italic leading-none opacity-80">COMMS_CHANNEL_v4</span>
+                                <span className="text-xs font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">Messages</span>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter italic leading-none text-[var(--theme-text)]">Uplink <span className="text-transparent opacity-20">HUB</span></h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tight text-[var(--theme-text)]">Conversations</h1>
                         </div>
-                        <button className="group w-20 h-20 bg-[var(--theme-text)] text-[var(--theme-bg)] rounded-3xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-2xl hover:bg-[var(--theme-primary)] hover:text-white border-2 border-white/5 relative overflow-hidden">
-                            <FiPlusCircle size={36} strokeWidth={2.5} className="relative z-10 group-hover:rotate-90 transition-transform duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <button className="group w-10 h-10 bg-[var(--theme-primary)] text-white rounded-xl flex items-center justify-center hover:bg-[var(--theme-primary-dark)] transition-colors">
+                            <FiPlusCircle size={20} />
                         </button>
                     </div>
 
@@ -79,45 +77,7 @@ export default function MessagingHub() {
 
             {/* Main Chat Area: The Synergy Deck */}
             <main className="flex-1 flex flex-col bg-[var(--theme-bg)] overflow-hidden relative">
-                {userId ? (
-                    <Outlet context={{ hideOnMobile: true }} />
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-32 text-center space-y-16 relative overflow-hidden bg-[var(--theme-bg-alt)]/20">
-                        {/* Cinematic Backdrop */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--theme-primary)]/5 to-transparent pointer-events-none" />
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[var(--theme-primary)]/[0.03] rounded-full blur-3xl pointer-events-none animate-pulse" />
-
-                        <div className="relative group/orb">
-                            <motion.div 
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-                                className="w-80 h-80 border-2 border-dashed border-[var(--theme-primary)]/20 rounded-full flex items-center justify-center group-hover/orb:border-[var(--theme-primary)]/40 transition-colors"
-                            >
-                                <div className="w-64 h-64 border-2 border-dashed border-[var(--theme-primary)]/10 rounded-full animate-spin-slow" />
-                            </motion.div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-48 h-48 bg-[var(--theme-text)] rounded-full border-4 border-white/5 flex items-center justify-center text-[var(--theme-primary)] shadow-2xl group-hover/orb:scale-110 group-hover/orb:rotate-12 transition-all duration-1000 relative overflow-hidden">
-                                    <FiZap size={80} className="animate-pulse relative z-10" strokeWidth={2.5} />
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-[var(--theme-primary)]/20 to-transparent" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-8 max-w-lg relative z-10">
-                            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter italic text-[var(--theme-text)] leading-[0.8]">ESTABLISH <br/><span className="text-transparent opacity-30">ENCRYPTED_LINK.</span></h2>
-                            <div className="h-1 w-24 bg-[var(--theme-primary)] mx-auto rounded-full opacity-40" />
-                            <p className="text-sm font-black uppercase text-[var(--theme-text-muted)] tracking-widest leading-relaxed italic opacity-30">CHOOSE_CONVERSATION_NODE FROM_DOMAIN_SIDECAR TO_INITIATE_SYNERGY_SYNC.</p>
-                        </div>
-                        
-                        <div className="flex items-center gap-12 pt-16 opacity-10">
-                             <FiCpu size={48} className="animate-spin-slow" />
-                             <FiGlobe size={48} className="animate-pulse" />
-                             <FiTerminal size={48} className="animate-bounce" />
-                        </div>
-                        
-                        <FiHash size={600} className="absolute bottom-[-100px] right-[-100px] opacity-[0.015] text-[var(--theme-text)] -rotate-12 pointer-events-none" />
-                    </div>
-                )}
+                <Outlet context={{ isMobile: true }} />
             </main>
         </div>
     );

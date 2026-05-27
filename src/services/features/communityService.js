@@ -1,46 +1,122 @@
 import core from '@/services/api/core';
 import { CORE } from '@/services/api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
 
 const communityService = {
-    getBranches: async () => core.get(CORE.COMMUNITY.BRANCHES),
+  getBranches: () => safeApiCall(
+    () => core.get(CORE.COMMUNITY.BRANCHES).then(r => r.data),
+    () => mockApiService.getBranches()
+  ),
 
-    getBranchDetail: async (slug) => core.get(CORE.COMMUNITY.BRANCH(slug)),
+  getBranchDetail: (slug) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.BRANCH(slug)).then(r => r.data),
+    () => mockApiService.getBranch(slug)
+  ),
 
-    joinBranch: async (slug) => core.post(CORE.COMMUNITY.JOIN(slug)),
+  joinBranch: (slug) => safeApiCall(
+    () => core.post(CORE.COMMUNITY.JOIN(slug)).then(r => r.data),
+    () => mockApiService.updateBranchMemberCount(slug, 1)
+  ),
 
-    getBranchChannels: async (branch) => core.get(CORE.COMMUNITY.CHANNELS(branch)),
+  leaveBranch: (slug) => safeApiCall(
+    () => core.delete(`/community/branches/${slug}/join`).then(r => r.data),
+    () => mockApiService.updateBranchMemberCount(slug, -1)
+  ),
 
-    getChannelDetail: async (branch, channel) => core.get(CORE.COMMUNITY.CHANNEL(branch, channel)),
+  getBranchChannels: (branch) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.CHANNELS(branch)).then(r => r.data),
+    () => mockApiService.getChannels(branch)
+  ),
 
-    getMessageHistory: async (branch, channel, params = {}) =>
-        core.get(CORE.COMMUNITY.MESSAGES(branch, channel), { params }),
+  getChannelDetail: (branch, channel) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.CHANNEL(branch, channel)).then(r => r.data),
+    () => mockApiService.getChannel(branch, channel)
+  ),
 
-    sendMessage: async ({ branch, channel, content }) =>
-        core.post(CORE.COMMUNITY.SEND_MESSAGE(branch, channel), { content }),
+  getMessageHistory: (branch, channel, params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.MESSAGES(branch, channel), { params }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    getGroupsInBranch: async (branch) => core.get(CORE.COMMUNITY.GROUPS(branch)),
+  sendMessage: ({ branch, channel, content }) => safeApiCall(
+    () => core.post(CORE.COMMUNITY.SEND_MESSAGE(branch, channel), { content }).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-    getGroupDetail: async (id) => core.get(CORE.COMMUNITY.GROUP(id)),
+  getGroupsInBranch: (branch) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.GROUPS(branch)).then(r => r.data),
+    () => mockApiService.getGroups(branch)
+  ),
 
-    joinGroup: async (id) => core.post(CORE.COMMUNITY.GROUP_JOIN(id)),
+  getGroupDetail: (id) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.GROUP(id)).then(r => r.data),
+    () => mockApiService.getGroup(id)
+  ),
 
-    leaveGroup: async (id) => core.delete(CORE.COMMUNITY.GROUP_LEAVE(id)),
+  joinGroup: (id) => safeApiCall(
+    () => core.post(CORE.COMMUNITY.GROUP_JOIN(id)).then(r => r.data),
+    () => mockApiService.updateGroup(id, { joined: true })
+  ),
 
-    getGroupMessages: async (id, params = {}) => core.get(CORE.COMMUNITY.GROUP_MESSAGES(id), { params }),
+  leaveGroup: (id) => safeApiCall(
+    () => core.delete(CORE.COMMUNITY.GROUP_LEAVE(id)).then(r => r.data),
+    () => mockApiService.updateGroup(id, { joined: false })
+  ),
 
-    getShowcaseFeed: async (branch, params = {}) => core.get(CORE.COMMUNITY.SHOWCASE(branch), { params }),
+  getGroupMessages: (id, params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.GROUP_MESSAGES(id), { params }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    getLFGBoard: async (branch, params = {}) => core.get(CORE.COMMUNITY.LFG(branch), { params }),
+  getShowcaseFeed: (branch, params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.SHOWCASE(branch), { params }).then(r => r.data),
+    () => mockApiService.getGroups(branch) // Fallback to groups if showcase not available
+  ),
 
-    getCommunityEvents: async (branch, params = {}) => core.get(CORE.COMMUNITY.EVENTS(branch), { params }),
+  getLFGBoard: (branch, params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.LFG(branch), { params }).then(r => r.data),
+    () => mockApiService.getLFGPosts(branch)
+  ),
 
-    getJoinedCommunities: async () => core.get(CORE.COMMUNITY.MY_JOINED),
+  getCommunityEvents: (branch, params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.EVENTS(branch), { params }).then(r => r.data),
+    () => mockApiService.getEvents(branch)
+  ),
 
-    getMyCommunityActivity: async () => core.get(CORE.COMMUNITY.MY_ACTIVITY),
+  getJoinedCommunities: () => safeApiCall(
+    () => core.get(CORE.COMMUNITY.MY_JOINED).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    getLiveStats: async () => core.get(CORE.COMMUNITY.STATS),
+  getUserActivity: (username) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.MY_ACTIVITY).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-    getTrendingPosts: async (params = {}) => core.get(CORE.COMMUNITY.TRENDING, { params }),
+  getMyCommunityActivity: () => safeApiCall(
+    () => core.get(CORE.COMMUNITY.MY_ACTIVITY).then(r => r.data),
+    () => Promise.resolve([])
+  ),
+
+  getLiveStats: () => safeApiCall(
+    () => core.get(CORE.COMMUNITY.STATS).then(r => r.data),
+    () => Promise.resolve({ online_members: 124, active_discussions: 12 })
+  ),
+
+  getTrendingPosts: (params = {}) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.TRENDING, { params }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
+
+  getGameChatPreview: (gameSlug, limit = 5) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.GAME_MESSAGES, { params: { game_slug: gameSlug, limit } }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
+
+  getGameStats: (gameSlug) => safeApiCall(
+    () => core.get(CORE.COMMUNITY.GAME_STATS, { params: { game_slug: gameSlug } }).then(r => r.data),
+    () => Promise.resolve({ members_with_game: 0, active_discussions: 0, posts_this_week: 0 })
+  ),
 };
 
 export default communityService;

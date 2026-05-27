@@ -1,53 +1,44 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FiHome, FiZap, FiUsers, FiMessageSquare, FiUser } from 'react-icons/fi';
-import { useAuth } from '@/app/providers/AuthProvider';
-import './MobileBottomTabs.css';
+import { FiHome, FiGrid, FiCompass, FiUsers, FiUser } from 'react-icons/fi';
 
-/**
- * MobileBottomTabs — Bottom Navigation Bar
- * Visible on mobile (<md breakpoint) only.
- * Shows: Home, Play (Games), Community, Messages, Profile
- */
-function MobileBottomTabs() {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
+const TABS = [
+  { id: 'home',      label: 'Home',      path: '/',           icon: FiHome },
+  { id: 'games',     label: 'Games',     path: '/games',      icon: FiGrid },
+  { id: 'explore',   label: 'Explore',   path: '/discovery',  icon: FiCompass },
+  { id: 'community', label: 'Community', path: '/community',  icon: FiUsers },
+  { id: 'profile',   label: 'Profile',   path: '/profile',    icon: FiUser },
+];
 
-  // Don't show on auth pages
-  if (location.pathname.includes('/auth/') || location.pathname.includes('/login') || location.pathname.includes('/signup')) {
-    return null;
-  }
+const SHOW_ON_PAGES = ['/', '/games', '/blog', '/tournaments', '/community', '/profile'];
 
-  const tabs = [
-    { icon: FiHome, label: 'Home', path: isAuthenticated ? '/community' : '/', id: 'home' },
-    { icon: FiZap, label: 'Play', path: '/games', id: 'play' },
-    { icon: FiUsers, label: 'Community', path: '/community', id: 'community' },
-    { icon: FiMessageSquare, label: 'Messages', path: '/messages', id: 'messages' },
-    { icon: FiUser, label: 'Profile', path: '/profile', id: 'profile' },
-  ];
+export default function MobileBottomTabs() {
+  const { pathname } = useLocation();
 
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
-  };
+  // Simple check for visibility
+  const shouldShow = SHOW_ON_PAGES.some(page => 
+    pathname === page || pathname.startsWith(`${page}/`)
+  );
+
+  if (!shouldShow) return null;
 
   return (
-    <div className="gzs-mobile-bottom-tabs">
-      <div className="gzs-mobile-bottom-tabs__inner">
-        {tabs.map((tab) => (
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] border-t border-[var(--theme-border)] bg-[var(--theme-bg)] pb-[safe-area-inset-bottom] lg:hidden">
+      <div className="flex h-16 items-center justify-around">
+        {TABS.map(({ id, label, path, icon: Icon }) => (
           <NavLink
-            key={tab.id}
-            to={tab.path}
-            className={`gzs-mobile-tab ${isActive(tab.path) ? 'active' : ''}`}
-            title={tab.label}
+            key={id}
+            to={path}
+            className={({ isActive }) => `
+              flex flex-col items-center justify-center gap-1 transition-all
+              ${isActive ? 'text-[var(--theme-primary)]' : 'text-[var(--theme-text-muted)]'}
+            `}
           >
-            <tab.icon size={20} strokeWidth={2} />
-            <span className="gzs-mobile-tab__label">{tab.label}</span>
+            <Icon size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
           </NavLink>
         ))}
       </div>
-    </div>
+    </nav>
   );
 }
-
-export default React.memo(MobileBottomTabs);

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import profileService from '@/services/features/profileService';
+import core from '@/services/api/core';
 
 export const useMasterProfile = () =>
     useQuery({
@@ -70,6 +71,17 @@ export const useDeleteSubProfile = () => {
         },
     });
 };
+
+export const useMasterFeed = (userId) =>
+    useQuery({
+        queryKey: ['profile', 'feed', userId],
+        queryFn: () =>
+            core.get(`/profiles/${userId}/feed`)
+                .then(r => r.data?.data || r.data || [])
+                .catch(() => []),
+        enabled: !!userId,
+        staleTime: 2 * 60 * 1000,
+    });
 
 export const useProfile = () => ({
     useMyProfile: useMasterProfile,

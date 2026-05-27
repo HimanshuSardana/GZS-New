@@ -79,6 +79,30 @@ export const GAMES = {
             { aa_pt: "Most Played FPS — Steam Charts 2022" },
         ],
         get_game: { affiliate_links: "https://playvalorant.com" },
+        community_hub: {
+            onlineCount: 1240,
+            memberCount: '1,240+',
+            activeDiscussions: 48,
+            weeklyPosts: 312,
+            activeTournament: {
+                name: 'Valorant Winter Showdown 2026',
+                status: 'Open',
+                dates: 'Jan 15 – Jan 20',
+                prize: '₹50,000',
+                slug: 'valorant-winter-showdown-2026',
+            },
+            messages: [
+                {
+                    author: 'GzoneSphere',
+                    text: 'A competitive 5v5 tactical shooter where precision gunplay meets unique agent abilities.',
+                    primary: true,
+                },
+                {
+                    author: 'Operator_Net',
+                    text: 'Looking for more players exploring Valorant. Drop your best tips, clips, and review notes.',
+                },
+            ],
+        },
     },
 
     cyberpunk: {

@@ -1,7 +1,9 @@
-import { lazy } from 'react';
+import React, { lazy } from 'react';
 import { Route, Navigate, useParams } from 'react-router-dom';
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
 import { validateCommunitySlug } from '@/shared/utils/routeValidation';
+import ErrorBoundary from '@/shared/components/ErrorBoundary';
+import ServiceUnavailable from '@/shared/components/ServiceUnavailable';
 
 // Community hub & layout
 const CommunityLayout = lazy(() => import('@/features/community/pages/CommunityLayout'));
@@ -39,7 +41,8 @@ const SocialRoutes = () => (
       {/* Each community with nested sub-routes (more specific goes after redirects) */}
       <Route path="/community/:slug" element={<CommunityLayout />}>
         <Route index element={<CommunityHomeRouter />} />
-        <Route key="community-room"       path="room/:roomSlug"    element={<CommunityRoom />} />
+        <Route path="channels" element={<DefaultChannelRedirect />} />
+        <Route key="community-room"       path="channels/:channelId"    element={<CommunityRoom />} />
         <Route key="community-lfg"        path="lfg"               element={<LFGBoard />} />
         <Route key="community-events"     path="events"            element={<CommunityEvents />} />
         <Route key="community-clips"      path="clips"             element={<ComingSoon title="Community Clips" description="Share and watch community highlight clips." />} />
@@ -54,9 +57,32 @@ const SocialRoutes = () => (
       </Route>
 
       {/* ── Messages ── */}
-      <Route path="/messages" element={<MessagingHub />}>
-        <Route index element={null} />
-        <Route path=":userId" element={<ConversationView />} />
+      <Route
+        path="/messages"
+        element={
+          <ErrorBoundary fallback={<ServiceUnavailable service="Messaging" />}>
+            <MessagingHub />
+          </ErrorBoundary>
+        }
+      >
+        <Route index element={
+          <div className="hidden md:flex flex-1 flex-col items-center justify-center min-h-full text-center p-8 gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--theme-bg-section)] border border-[var(--theme-border)] flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--theme-text-muted)]">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-[var(--theme-text-muted)]">Select a conversation to start messaging</p>
+          </div>
+        } />
+        <Route
+          path=":conversationId"
+          element={
+            <ErrorBoundary fallback={<ServiceUnavailable service="Messaging" />}>
+              <ConversationView />
+            </ErrorBoundary>
+          }
+        />
       </Route>
     </Route>
   </>
@@ -64,8 +90,23 @@ const SocialRoutes = () => (
 
 function CommunityHomeRouter() {
   const { slug } = useParams();
+
   if (!validateCommunitySlug(slug)) return <Navigate to="/" replace />;
-  return <BranchHub slug={slug} />;
+
+  return (
+    <React.Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh] text-[var(--theme-text-muted)]">
+        Loading community...
+      </div>
+    }>
+      <BranchHub slug={slug} />
+    </React.Suspense>
+  );
+}
+
+function DefaultChannelRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/community/${slug}/channels/general`} replace />;
 }
 
 export default SocialRoutes;

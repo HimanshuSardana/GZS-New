@@ -1,57 +1,40 @@
-export default function QuickControlSection({ controls }) {
+﻿export default function QuickControlSection({ controls }) {
     if (!controls) return null;
     return (
-        <section className="container-global section-padding relative">
+    <section className="gp-content-section relative">
+        <div className="text-center mb-16 gp-animate-in relative z-10">
+            <span className="gp-section-label flex items-center justify-center gap-3">
+                THE BASICS
+            </span>
+            <h2 className="gp-section-heading !border-b-0 mx-auto max-w-max">
+                QUICK CONTROLS
+            </h2>
+            <div className="w-24 h-1 bg-[var(--gp-primary)] mx-auto -mt-2"></div>
+        </div>
 
-            {/* Background elements */}
-            <div className="absolute top-1/2 right-0 w-[500px] h-[500px] bg-[var(--gp-primary)]/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2"></div>
-
-            <div className="text-center mb-16 gp-animate-in relative z-10">
-                <span className="gp-section-label flex items-center justify-center gap-3">
-                    <span className="w-8 h-[2px] bg-[var(--gp-primary)]"></span>
-                    THE BASICS
-                    <span className="w-8 h-[2px] bg-[var(--gp-primary)]"></span>
-                </span>
-                <h2 className="gp-hero-title text-6xl md:text-7xl text-[var(--theme-text)]">
-                    QUICK CONTROLS
-                </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 relative z-10">
-                {controls.map((c, i) => (
-                    <div
-                        key={i}
-                        className="bg-white/80 backdrop-blur-xl border border-[var(--gp-border)] rounded-2xl p-8 flex gap-8 items-center gp-card-hover gp-animate-in group hover:shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:border-[var(--gp-primary)] transition-all duration-500 overflow-hidden relative"
-                        style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                        {/* Shimmer effect */}
-                        <div className="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-[var(--gp-primary)]/10 to-transparent skew-x-[-20deg] group-hover:animate-[shimmer_1.5s_infinite]"></div>
-
-                        {/* Diamond Icon Container */}
-                        <div className="w-16 h-16 shrink-0 flex items-center justify-center relative group-hover:scale-110 transition-transform duration-300">
-                            <div className="absolute inset-0 border-2 border-[var(--gp-primary)] opacity-20 rotate-45 rounded-sm group-hover:opacity-100 transition-all duration-300 shadow-sm" />
-                            <div className="absolute inset-2 border border-[var(--gp-primary)] rotate-45 rounded-sm group-hover:rotate-[135deg] transition-all duration-700" />
-                            {/* Icon Placeholder */}
-                            <div className="relative z-10 w-6 h-6 bg-[var(--gp-primary)] opacity-40 rounded-full group-hover:opacity-100 shadow-sm transition-opacity duration-300" />
-                        </div>
-
-                        <div className="relative z-10">
-                            <h3 className="gp-hero-title text-2xl mb-2 tracking-widest text-[var(--theme-text)] group-hover:text-[var(--gp-primaryDark)] transition-colors duration-300">
-                                {c.qco_title}
-                            </h3>
-                            <p className="gzs-body text-[var(--theme-text)]/80 font-bold text-lg group-hover:text-[var(--theme-text)] transition-colors">
-                                {c.qco_title_desc}
-                            </p>
-                        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+            {controls.map((c, i) => (
+                <div
+                    key={i}
+                    className="gp-card flex gap-8 items-center gp-animate-in group relative overflow-hidden"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                >
+                    {/* Icon Container */}
+                    <div className="w-16 h-16 shrink-0 flex items-center justify-center bg-[var(--theme-bg-section)] rounded-2xl group-hover:bg-[var(--gp-primary)] group-hover:scale-105 transition-all duration-[var(--transition-normal, 300ms)]">
+                        <div className="w-5 h-5 border-2 border-[var(--gp-primary)] rounded rotate-45 group-hover:border-[var(--theme-text-inverse)] transition-colors duration-[var(--transition-normal, 300ms)]" />
                     </div>
-                ))}
-            </div>
-        </section>
-    );
+
+                    <div>
+                        <h3 className="gp-hero-title text-[20px] mb-1 tracking-tight text-[var(--theme-text)] group-hover:text-[var(--gp-primary)] transition-colors uppercase">
+                            {c.qco_title}
+                        </h3>
+                        <p className="gzs-body text-[var(--theme-text-muted)] font-bold text-[16px] leading-snug">
+                            {c.qco_title_desc}
+                        </p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </section>
+  );
 }
-
-
-
-
-
-

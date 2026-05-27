@@ -15,7 +15,7 @@ export default function ConversationView() {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { useGetConversation, useSendMessage } = useMessages();
-    const { data: messages, isLoading } = useGetConversation(userId);
+    const { data: messages } = useGetConversation(userId);
     const { mutate: sendMessage } = useSendMessage();
     const bottomRef = useRef(null);
 

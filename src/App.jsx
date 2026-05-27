@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/app/providers/ThemeProvider';
 import { ToastProvider } from '@/shared/components/Toast';
 import { HelmetProvider } from 'react-helmet-async';
 import AppRouter from '@/app/router/AppRouter';
+import AppInitializer from '@/app/providers/AppInitializer';
 
 const App = () => (
   <HelmetProvider>
@@ -11,7 +12,9 @@ const App = () => (
       <ToastProvider>
         <ThemeProvider>
           <ErrorBoundary>
-            <AppRouter />
+            <AppInitializer>
+              <AppRouter />
+            </AppInitializer>
           </ErrorBoundary>
         </ThemeProvider>
       </ToastProvider>

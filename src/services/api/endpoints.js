@@ -10,8 +10,8 @@ export const CORE = {
         LOGOUT: '/auth/logout',
         REFRESH: '/auth/refresh',
         VERIFY_EMAIL: '/auth/verify-email',
-        FORGOT_PASSWORD: '/auth/forgot-password',
-        RESET_PASSWORD: '/auth/reset-password',
+        FORGOT_PASSWORD: '/auth/password/forgot',
+        RESET_PASSWORD: '/auth/password/reset',
     },
 
     USER: {
@@ -113,6 +113,9 @@ export const CORE = {
         MY_ACTIVITY: '/community/me/activity',
         STATS: '/community/stats/live',
         TRENDING: '/community/trending',
+
+        GAME_MESSAGES: '/community/channels/messages',
+        GAME_STATS: '/community/stats',
     },
 
     LFG: {
@@ -195,6 +198,12 @@ export const CORE = {
         MARK_ALL_READ: '/notifications/read-all',
         READ_ALL: '/notifications/read-all',
     },
+
+    READING_LIST: {
+        GET: '/reading-list',
+        SAVE: (slug) => `/reading-list/${slug}`,
+        UNSAVE: (slug) => `/reading-list/${slug}`,
+    },
 };
 
 export const CMS = {
@@ -211,16 +220,37 @@ export const CMS = {
         STATUS: (id) => `/games/${id}/status`,
     },
 
+    // New structured GamePost endpoints (backed by gamepost schema)
+    GAMEPOSTS: {
+        LIST: '/gameposts',
+        BY_SLUG: (slug) => `/gameposts/${slug}`,
+        ADMIN_LIST: '/admin/gameposts',
+        CREATE: '/admin/gameposts',
+        UPDATE: (id) => `/admin/gameposts/${id}`,
+        PUBLISH: (id) => `/admin/gameposts/${id}/publish`,
+        DELETE: (id) => `/admin/gameposts/${id}`,
+        USER_REVIEWS: (slug) => `/gameposts/${slug}/user-reviews`,
+    },
+
     BLOGS: {
         LIST: '/blogs',
         BY_SLUG: (slug) => `/blogs/${slug}`,
         FEATURED: '/blogs/featured',
+        MOST_READ: '/blogs/most-read',
+        TRENDING: '/blogs/trending',
         LIKE: (slug) => `/blogs/${slug}/like`,
         CATEGORIES: '/blogs/categories',
+        COMMENTS: (slug) => `/blogs/${slug}/comments`,
+        COMMENT_LIKE: (slug, id) => `/blogs/${slug}/comments/${id}/like`,
+        COMMENT_REPORT: (slug, id) => `/blogs/${slug}/comments/${id}/report`,
         CREATE: '/blogs',
         UPDATE: (id) => `/blogs/${id}`,
         DELETE: (id) => `/blogs/${id}`,
+        SIGNALS: (id) => `/admin/blogs/${id}/signals`,
     },
+
+    // READING_LIST lives in CORE (user-owned data, requires JWT auth).
+    // CMS has no /reading-list handler — use CORE.READING_LIST exclusively.
 
     SEARCH: '/search',
 
@@ -235,5 +265,6 @@ export const CMS = {
         USER: (id) => `/admin/users/${id}`,
         MEDIA: '/admin/media',
         LOGS: '/admin/logs',
+        HUB_SETTINGS: (section) => `/admin/hub-settings?section=${section}`,
     },
 };

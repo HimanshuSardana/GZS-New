@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 import { SettingsField, SettingsSection, SettingsShell } from '../components/SettingsShell';
+import { useSettingsForm } from '../useSettingsForm';
+import core from '@/services/api/core';
 
 const ACTIVE_SESSIONS = [
   { id: 'session-1', device: 'Chrome on Windows 11', ip: '103.42.18.11', location: 'Mumbai, India', current: true, lastSeen: 'Active now' },
@@ -25,18 +27,27 @@ function getStrengthLabel(score) {
 export default function SecurityPassword() {
   usePageTheme('profile');
 
-  const [form, setForm] = useState({ current: '', next: '', confirm: '' });
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [sessions, setSessions] = useState(ACTIVE_SESSIONS);
+  const { values, isSaving, isDirty, handleChange, handleSave } = useSettingsForm(
+    () => Promise.resolve({ current_password: '', new_password: '', confirm_password: '' }),
+    (data) => {
+      if (data.new_password !== data.confirm_password) throw new Error('Passwords do not match');
+      if (data.new_password.length < 8) throw new Error('Password too short (min 8 chars)');
+      return core.post('/auth/change-password', {
+        current_password: data.current_password,
+        new_password: data.new_password
+      });
+    }
+  );
 
   const strengthScore = useMemo(() => {
+    const pwd = values.new_password || '';
     let score = 0;
-    if (form.next.length >= 8) score += 1;
-    if (/[A-Z]/.test(form.next)) score += 1;
-    if (/[0-9]/.test(form.next)) score += 1;
-    if (/[^A-Za-z0-9]/.test(form.next)) score += 1;
+    if (pwd.length >= 8) score += 1;
+    if (/[A-Z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
     return score;
-  }, [form.next]);
+  }, [values.new_password]);
 
   const strength = getStrengthLabel(strengthScore);
 
@@ -55,107 +66,103 @@ export default function SecurityPassword() {
         >
           <div className="grid gap-5 md:grid-cols-2">
             <SettingsField label="Current Password">
-              <input type="password" className="w-full rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-input)] px-4 py-3" value={form.current} onChange={(event) => setForm((current) => ({ ...current, current: event.target.value }))} />
+              <input
+                type="password"
+                className="pr-input"
+                value={values.current_password || ''}
+                onChange={(e) => handleChange('current_password', e.target.value)}
+                placeholder="••••••••"
+              />
             </SettingsField>
             <div />
             <SettingsField label="New Password">
-              <input type="password" className="w-full rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-input)] px-4 py-3" value={form.next} onChange={(event) => setForm((current) => ({ ...current, next: event.target.value }))} />
+              <input
+                type="password"
+                className="pr-input"
+                value={values.new_password || ''}
+                onChange={(e) => handleChange('new_password', e.target.value)}
+                placeholder="••••••••"
+              />
             </SettingsField>
             <SettingsField label="Confirm New Password">
-              <input type="password" className="w-full rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-input)] px-4 py-3" value={form.confirm} onChange={(event) => setForm((current) => ({ ...current, confirm: event.target.value }))} />
+              <input
+                type="password"
+                className="pr-input"
+                value={values.confirm_password || ''}
+                onChange={(e) => handleChange('confirm_password', e.target.value)}
+                placeholder="••••••••"
+              />
             </SettingsField>
           </div>
-          <div className="mt-5 rounded-2xl bg-[var(--theme-bg-alt)] p-4">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-semibold text-[var(--theme-text)]">Password strength</span>
-              <span className="text-sm text-[var(--theme-text-muted)]">{strength.text}</span>
+          <div className="mt-5 rounded-2xl bg-[var(--theme-bg-alt)] p-6 border border-[var(--theme-border)]">
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <span className="text-xs font-black uppercase tracking-widest text-[var(--theme-text)] italic">Security Matrix</span>
+              <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${strengthScore >= 3 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                {strength.text}
+              </span>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-              <div className={`${strength.color} h-full rounded-full transition-all`} style={{ width: `${Math.max(8, strengthScore * 25)}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--theme-border)]">
+              <div className={`${strength.color} h-full rounded-full transition-all duration-500 shadow-[0_0_8px] shadow-current`} style={{ width: `${Math.max(8, strengthScore * 25)}%` }} />
             </div>
           </div>
           <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
-          </div>
-        </SettingsSection>
-
-        <SettingsSection
-          title="Two-Factor Authentication"
-          description="Add an extra verification step to strengthen account protection during sign-in."
-        >
-          <div className="flex flex-col gap-4 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg-alt)] p-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-semibold text-[var(--theme-text)]">{twoFactorEnabled ? '2FA is enabled' : '2FA is disabled'}</p>
-              <p className="mt-1 text-sm text-[var(--theme-text-muted)]">Setup flow will connect an authenticator app in a later phase. For now this is a mock toggle.</p>
-            </div>
             <button
               type="button"
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${twoFactorEnabled ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}
-              onClick={() => setTwoFactorEnabled((value) => !value)}
+              className="pr-btn-primary"
+              disabled={!isDirty || isSaving}
+              onClick={handleSave}
             >
-              {twoFactorEnabled ? 'Disable' : 'Enable'}
+              {isSaving ? 'SAVING...' : 'Update Password'}
             </button>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
           </div>
         </SettingsSection>
 
         <SettingsSection
           title="Active Sessions"
-          description="Review devices currently signed in to your account and revoke access when needed."
+          description="Review devices currently signed in to your account."
         >
           <div className="space-y-4">
-            {sessions.map((session) => (
+            {ACTIVE_SESSIONS.map((session) => (
               <div key={session.id} className="flex flex-col gap-4 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg-alt)] p-5 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="font-semibold text-[var(--theme-text)]">{session.device}</p>
-                  <p className="mt-1 text-sm text-[var(--theme-text-muted)]">{session.location} | {session.ip} | {session.lastSeen}</p>
+                  <p className="text-sm font-bold text-[var(--theme-text)]">{session.device}</p>
+                  <p className="mt-1 text-xs text-[var(--theme-text-muted)] font-medium">{session.location} | {session.ip} | {session.lastSeen}</p>
                 </div>
                 <button
                   type="button"
-                  className="rounded-2xl border border-[var(--theme-border)] px-4 py-2 text-sm font-semibold text-[var(--theme-text)]"
+                  className="px-4 py-2 rounded-xl border border-[var(--theme-border)] text-[10px] font-black uppercase tracking-widest text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors disabled:opacity-30"
                   disabled={session.current}
-                  onClick={() => setSessions((current) => current.filter((item) => item.id !== session.id))}
                 >
-                  {session.current ? 'Current Session' : 'Revoke'}
+                  {session.current ? 'CURRENT' : 'REVOKE'}
                 </button>
               </div>
             ))}
-          </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
           </div>
         </SettingsSection>
 
         <SettingsSection
           title="Login History"
-          description="Last 10 sign-in events including IP address, device, time, and location."
+          description="Last 10 sign-in events including IP address and location."
         >
-          <div className="overflow-hidden rounded-2xl border border-[var(--theme-border)]">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--theme-bg-alt)]">
+          <div className="overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)]">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[var(--theme-bg-alt)] border-b border-[var(--theme-border)]">
                 <tr>
-                  <th className="px-4 py-3 font-semibold text-[var(--theme-text-muted)]">IP</th>
-                  <th className="px-4 py-3 font-semibold text-[var(--theme-text-muted)]">Device</th>
-                  <th className="px-4 py-3 font-semibold text-[var(--theme-text-muted)]">Time</th>
-                  <th className="px-4 py-3 font-semibold text-[var(--theme-text-muted)]">Location</th>
+                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[var(--theme-text-muted)]">IP Address</th>
+                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Terminal</th>
+                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[var(--theme-text-muted)]">Timestamp</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[var(--theme-border)]">
                 {LOGIN_HISTORY.map((item) => (
-                  <tr key={item.id} className="border-t border-[var(--theme-border)]">
-                    <td className="px-4 py-3">{item.ip}</td>
-                    <td className="px-4 py-3">{item.device}</td>
-                    <td className="px-4 py-3">{item.time}</td>
-                    <td className="px-4 py-3">{item.location}</td>
+                  <tr key={item.id} className="hover:bg-[var(--theme-bg-alt)] transition-colors">
+                    <td className="px-6 py-4 font-mono text-[var(--theme-text)]">{item.ip}</td>
+                    <td className="px-6 py-4 text-[var(--theme-text)]">{item.device}</td>
+                    <td className="px-6 py-4 text-[var(--theme-text-muted)]">{item.time}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
           </div>
         </SettingsSection>
       </SettingsShell>

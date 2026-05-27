@@ -1,15 +1,12 @@
-FROM golang:1.21-alpine as builder
-
+FROM golang:1.21-alpine AS builder
 WORKDIR /app
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
-
 COPY . .
-RUN go build -o main .
+RUN go build -o cms-api .
 
 FROM alpine:latest
-WORKDIR /root/
-COPY --from=builder /app/main .
-
+WORKDIR /app
+COPY --from=builder /app/cms-api .
 EXPOSE 8080
-CMD ["./main"]
+CMD ["./cms-api"]

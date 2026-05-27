@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 import logging
+import time
 from typing import Optional
 from uuid import UUID
 
@@ -71,12 +72,12 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             )
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware to log requests and responses"""
-    
     async def dispatch(self, request: Request, call_next):
-        logger.info(f"{request.method} {request.url.path}")
+        start = time.time()
         response = await call_next(request)
-        logger.info(f"{response.status_code} {request.method} {request.url.path}")
+        duration_ms = int((time.time() - start) * 1000)
+        client_ip = request.headers.get('x-forwarded-for', request.client.host if request.client else '-')
+        logger.info(f"→ {request.method} {request.url.path} | {response.status_code} | {duration_ms}ms | {client_ip}")
         return response
 
 def get_current_user(request: Request) -> Optional[UUID]:

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FiImage, FiLink, FiAtSign } from 'react-icons/fi';
 
 export default function PostComposer({ masterProfile, subProfiles = [], onCreatePost }) {
   const [content, setContent] = useState('');
@@ -16,7 +17,6 @@ export default function PostComposer({ masterProfile, subProfiles = [], onCreate
         },
       };
     }
-
     const subProfile = subProfiles.find((profile) => profile.id === selectedProfile);
     return {
       sub_profile_type: subProfile?.type || 'master',
@@ -32,7 +32,6 @@ export default function PostComposer({ masterProfile, subProfiles = [], onCreate
 
   const handleSubmit = () => {
     if (!content.trim()) return;
-
     onCreatePost?.({
       id: `draft-${Date.now()}`,
       user_id: masterProfile.id,
@@ -46,52 +45,103 @@ export default function PostComposer({ masterProfile, subProfiles = [], onCreate
       created_at: new Date().toISOString(),
       ...selectedAuthor,
     });
-
     setContent('');
   };
 
+  const avatarUrl = selectedAuthor?.author?.avatar_url;
+  const displayName = selectedAuthor?.author?.display_name;
+
   return (
-    <section className="gzs-card-elevated rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Share an update</h2>
-          <p className="mt-1 text-sm text-slate-500">Post to your master identity or one of your domain profiles.</p>
+    <div
+      style={{
+        background: 'var(--theme-card)',
+        border: '1px solid var(--theme-border)',
+        borderRadius: 12,
+        padding: '14px 16px',
+        marginBottom: 12,
+      }}
+    >
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div
+          style={{
+            width: 32, height: 32, borderRadius: '50%', overflow: 'hidden',
+            flexShrink: 0, background: 'var(--theme-bg-section)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 13, color: 'var(--theme-text-subtle)', fontWeight: 700 }}>
+              {displayName?.[0]?.toUpperCase()}
+            </span>
+          )}
         </div>
 
-        <select
-          value={selectedProfile}
-          onChange={(event) => setSelectedProfile(event.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-violet-300"
-        >
-          <option value="master">Master Profile</option>
-          {subProfiles.map((profile) => (
-            <option key={profile.id} value={profile.id}>
-              {profile.display_name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mt-5">
         <textarea
           value={content}
-          onChange={(event) => setContent(event.target.value.slice(0, 500))}
-          rows={5}
+          onChange={(e) => setContent(e.target.value.slice(0, 500))}
           placeholder="What are you building, learning, shipping, or planning next?"
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 outline-none transition focus:border-violet-300"
+          rows={3}
+          style={{
+            flex: 1, resize: 'none', minHeight: 68, fontSize: 13,
+            background: 'var(--theme-bg-section)', border: '1px solid var(--theme-border)',
+            borderRadius: 8, padding: '8px 12px', color: 'var(--theme-text)',
+            outline: 'none', lineHeight: 1.5, width: '100%',
+          }}
         />
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{content.length}/500</p>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="rounded-xl bg-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-600"
-        >
-          Post update
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          {[FiImage, FiLink, FiAtSign].map((Icon, i) => (
+            <button
+              key={i}
+              type="button"
+              style={{
+                width: 32, height: 32, borderRadius: 8, border: 'none', cursor: 'pointer',
+                background: 'transparent', color: 'var(--theme-text-subtle)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Icon size={15} />
+            </button>
+          ))}
+          <select
+            value={selectedProfile}
+            onChange={(e) => setSelectedProfile(e.target.value)}
+            style={{
+              marginLeft: 8, height: 32, borderRadius: 8, border: '1px solid var(--theme-border)',
+              background: 'var(--theme-bg-section)', color: 'var(--theme-text-muted)',
+              fontSize: 11, padding: '0 8px', outline: 'none', cursor: 'pointer',
+            }}
+          >
+            <option value="master">Master Profile</option>
+            {subProfiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {profile.display_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: 'var(--theme-text-subtle)' }}>{content.length}/500</span>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            style={{
+              padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              border: 'none',
+              background: content.trim() ? '#a78bfa' : 'var(--theme-bg-section)',
+              color: content.trim() ? '#ffffff' : 'var(--theme-text-subtle)',
+              transition: 'background 0.15s, color 0.15s',
+            }}
+          >
+            Post
+          </button>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

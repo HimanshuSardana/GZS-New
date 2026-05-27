@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
     FiAward, FiArrowLeft, FiEdit2, FiCheck, FiPlus, 
     FiTerminal, FiActivity, FiGlobe, FiLayers, FiHash, FiZap, FiTarget, FiCpu, FiX
@@ -16,7 +16,6 @@ const STATUS_CONFIG = {
 const PLACEMENT_MEDAL = { 1: '🏆', 2: '🥈', 3: '🥉' };
 
 export default function TournamentResults() {
-    const { id } = useParams();
     const navigate = useNavigate();
     const [results, setResults] = useState(MOCK_RESULTS);
     const [editingId, setEditingId] = useState(null);

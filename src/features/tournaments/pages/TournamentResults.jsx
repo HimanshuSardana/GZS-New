@@ -27,7 +27,13 @@ export default function TournamentResults() {
     
     return (
         <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] font-body selection:bg-[var(--theme-primary)]/30 pb-48">
-            <Helmet><title>Engagement Standings | GzoneSphere</title></Helmet>
+            <Helmet>
+                <title>Tournament Results | GzoneSphere Hall of Fame</title>
+                <meta name="description" content="Relive the greatest moments and final standings from GzoneSphere tournaments. View winners, prize distributions, and performance metrics." />
+                <meta property="og:title" content="Tournament Results | GzoneSphere Hall of Fame" />
+                <meta property="og:description" content="Official results and final standings for GzoneSphere competitive events." />
+                <link rel="canonical" href={window.location.href} />
+            </Helmet>
 
             {/* Cinematic Background Artifacts */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">

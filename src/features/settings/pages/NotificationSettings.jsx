@@ -1,7 +1,11 @@
-import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 import { SettingsSection, SettingsShell } from '../components/SettingsShell';
+import { useSettingsForm } from '../useSettingsForm';
+import core from '@/services/api/core';
+import { CORE } from '@/services/api/endpoints';
+import Skeleton from '@/shared/components/Skeleton';
+import { FiToggleLeft, FiToggleRight } from 'react-icons/fi';
 
 const EMAIL_NOTIFICATIONS = [
   { key: 'tournamentUpdates', label: 'Tournament updates', description: 'Bracket changes, registration reminders, and result notices.' },
@@ -17,20 +21,22 @@ const IN_APP_NOTIFICATIONS = [
   { key: 'achievements', label: 'Achievements', description: 'Milestones, verification badges, and progress unlocks.' },
 ];
 
-function ToggleRow({ label, description, checked, onChange }) {
+function ToggleRow({ label, description, checked, onChange, isLoading }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg-alt)] p-4">
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg-alt)] p-5 transition-all">
       <div className="min-w-0">
-        <p className="font-semibold text-[var(--theme-text)]">{label}</p>
-        <p className="mt-1 text-sm text-[var(--theme-text-muted)]">{description}</p>
+        <p className="text-sm font-bold text-[var(--theme-text)] uppercase tracking-tight italic">{label}</p>
+        <p className="mt-1 text-xs text-[var(--theme-text-muted)] font-medium leading-relaxed italic opacity-80">{description}</p>
       </div>
-      <button
-        type="button"
-        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? 'bg-[var(--theme-primary)]' : 'bg-slate-300'}`}
-        onClick={onChange}
-      >
-        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-      </button>
+      {isLoading ? <Skeleton className="h-8 w-12 rounded-full" /> : (
+        <button
+          type="button"
+          onClick={onChange}
+          className={`transition-colors duration-200 ${checked ? 'text-[var(--theme-primary)]' : 'text-[var(--theme-text-muted)] opacity-30'}`}
+        >
+          {checked ? <FiToggleRight size={36} /> : <FiToggleLeft size={36} />}
+        </button>
+      )}
     </div>
   );
 }
@@ -38,21 +44,10 @@ function ToggleRow({ label, description, checked, onChange }) {
 export default function NotificationSettings() {
   usePageTheme('profile');
 
-  const [settings, setSettings] = useState({
-    tournamentUpdates: true,
-    newFollowers: true,
-    skillVerifications: true,
-    platformNews: false,
-    messages: true,
-    mentions: true,
-    friendRequests: true,
-    achievements: false,
-    digestFrequency: 'Weekly',
-  });
-
-  function toggle(key) {
-    setSettings((current) => ({ ...current, [key]: !current[key] }));
-  }
+  const { values, isLoading, isSaving, isDirty, handleChange, handleSave } = useSettingsForm(
+    () => core.get(CORE.NOTIFICATIONS.LIST + '/settings').then(r => r.data),
+    (data) => core.patch('/notifications/settings', data)
+  );
 
   return (
     <>
@@ -69,11 +64,24 @@ export default function NotificationSettings() {
         >
           <div className="space-y-4">
             {EMAIL_NOTIFICATIONS.map((item) => (
-              <ToggleRow key={item.key} {...item} checked={settings[item.key]} onChange={() => toggle(item.key)} />
+              <ToggleRow
+                key={item.key}
+                {...item}
+                checked={values[item.key]}
+                onChange={() => handleChange(item.key, !values[item.key])}
+                isLoading={isLoading}
+              />
             ))}
           </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              className="pr-btn-primary"
+              disabled={!isDirty || isSaving}
+              onClick={handleSave}
+            >
+              {isSaving ? 'SAVING...' : 'Save Preferences'}
+            </button>
           </div>
         </SettingsSection>
 
@@ -83,11 +91,24 @@ export default function NotificationSettings() {
         >
           <div className="space-y-4">
             {IN_APP_NOTIFICATIONS.map((item) => (
-              <ToggleRow key={item.key} {...item} checked={settings[item.key]} onChange={() => toggle(item.key)} />
+              <ToggleRow
+                key={item.key}
+                {...item}
+                checked={values[item.key]}
+                onChange={() => handleChange(item.key, !values[item.key])}
+                isLoading={isLoading}
+              />
             ))}
           </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              className="pr-btn-primary"
+              disabled={!isDirty || isSaving}
+              onClick={handleSave}
+            >
+              {isSaving ? 'SAVING...' : 'Save Preferences'}
+            </button>
           </div>
         </SettingsSection>
 
@@ -100,19 +121,27 @@ export default function NotificationSettings() {
               <button
                 key={option}
                 type="button"
-                className={`rounded-2xl border px-4 py-4 text-sm font-semibold transition-colors ${
-                  settings.digestFrequency === option
-                    ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white'
-                    : 'border-[var(--theme-border)] bg-[var(--theme-bg-alt)] text-[var(--theme-text)]'
+                className={`rounded-2xl border-2 px-4 py-5 text-xs font-black uppercase tracking-widest transition-all italic ${
+                  values.digestFrequency === option
+                    ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white shadow-lg shadow-[var(--theme-primary)]/20'
+                    : 'border-[var(--theme-border)] bg-[var(--theme-bg-alt)] text-[var(--theme-text-muted)] hover:bg-[var(--theme-card)]'
                 }`}
-                onClick={() => setSettings((current) => ({ ...current, digestFrequency: option }))}
+                onClick={() => handleChange('digestFrequency', option)}
+                disabled={isLoading}
               >
                 {option}
               </button>
             ))}
           </div>
-          <div className="mt-6 flex justify-end">
-            <button type="button" className="gzs-btn-primary">Save Changes</button>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              className="pr-btn-primary"
+              disabled={!isDirty || isSaving}
+              onClick={handleSave}
+            >
+              {isSaving ? 'SAVING...' : 'Save Preferences'}
+            </button>
           </div>
         </SettingsSection>
       </SettingsShell>

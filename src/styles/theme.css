@@ -1,6 +1,9 @@
 /* ==========================================================
-   GLOBAL THEME ARCHITECTURE
-   Plain CSS Variable definitions scoped by theme classes.
+   GzoneSphere — THEME SYSTEM
+   Each section of the site applies one theme class to <html>.
+   ThemeProvider.jsx manages the switch on route change.
+
+   USAGE: .theme-{name} on <html> → CSS vars cascade everywhere
    ========================================================== */
 
 @import "./variables/colors.css";
@@ -8,433 +11,400 @@
 @import "./variables/spacing.css";
 @import "./layouts/navbar.css";
 
-/* ── Home Theme ── Clean Light Theme */
+/* ─────────────────────────────────────────────────────────────
+   THEME: HOME  (/  and general pages)
+   Clean light — authoritative blue accent
+───────────────────────────────────────────────────────────── */
 .theme-home {
-  /* ── Brand Primary ── */
-  --theme-primary:        #1D6ADB;   /* GZS Blue — authority, trust */
-  --theme-primary-dark:   #1558B8;
-  --theme-primary-light:  #3B82F6;
-  --theme-primary-soft:   rgba(29, 106, 219, 0.08);
-  --theme-primary-rgb:    29, 106, 219;
+  --theme-primary:        var(--gzs-blue);
+  --theme-primary-dark:   var(--gzs-blue-dark);
+  --theme-primary-light:  var(--gzs-blue-light);
+  --theme-primary-soft:   var(--gzs-blue-soft);
+  --theme-primary-rgb:    var(--gzs-blue-rgb);
 
-  /* ── Backgrounds ── */
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.08);
+
   --theme-bg:             #FFFFFF;
-  --theme-bg-alt:         #F8FAFC;
-  --theme-bg-section:     #F1F5F9;
-  --theme-bg-dark:        #0F172A;   /* hero + final CTA */
+  --theme-bg-alt:         var(--slate-50);
+  --theme-bg-section:     var(--slate-100);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
   --theme-card:           #FFFFFF;
+  --theme-card-hover:     var(--slate-50);
+  --theme-card-rgb:       255, 255, 255;
 
-  /* ── Text ── */
-  --theme-text:           #0F172A;   /* near-black, not pure black */
-  --theme-text-muted:     #64748B;
-  --theme-text-subtle:    #94A3B8;
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
   --theme-text-inverse:   #FFFFFF;
 
-  /* ── Borders ── */
-  --theme-border:         #E2E8F0;
-  --theme-border-strong:  #CBD5E1;
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--slate-300);
+  --theme-input:          #FFFFFF;
 
-  /* ── Section-specific accent washes ── */
-  --home-games-bg:        #F0F9FF;   /* sky-50 */
-  --home-games-accent:    #0EA5E9;   /* sky-500 */
-  --home-tourney-bg:      #F0FDF4;   /* green-50 */
-  --home-tourney-accent:  #16A34A;   /* green-600 */
-  --home-profile-bg:      #FAF5FF;   /* purple-50 */
-  --home-profile-accent:  #7C3AED;   /* violet-600 */
-  --home-community-bg:    #FFF7ED;   /* orange-50 */
-  --home-community-accent:#EA580C;   /* orange-600 */
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+
+  --theme-shadow-sm:  0 1px 3px rgba(15,23,42,0.06);
+  --theme-shadow-md:  0 4px 16px rgba(15,23,42,0.08);
+  --theme-shadow-lg:  0 8px 32px rgba(15,23,42,0.10);
 }
 
-/* ── Fallback (Global/Root) Theme ── */
-:root {
-  /* Default Brand Mapping */
-  --theme-primary:        var(--brand-primary);
-  --theme-primary-dark:   var(--brand-primary-dark);
-  --theme-primary-light:  var(--brand-primary-light);
-  
-  --theme-bg:             var(--color-black);
-  --theme-bg-alt:         var(--neutral-950);
-  --theme-bg-section:     #121212;
-  --theme-card:           #1E1E1E;
-  
-  --theme-text:           #EDEDED;
-  --theme-text-muted:     var(--neutral-400);
-  --theme-text-inverse:   var(--color-black);
-  
-  --theme-border:         #333333;
-  --theme-input:          #2A2A2A;
-
-  /* Status Colors */
-  --status-success:       #10b981;
-  --status-success-rgb:   16, 185, 129;
-  --status-error:         #f43f5e;
-  --status-error-rgb:     244, 63, 94;
-  --status-warning:       #f59e0b;
-  --status-warning-rgb:   245, 158, 11;
-
-  /* ── Secondary Accent ── */
-  --theme-secondary:          #a78bfa;
-  --theme-secondary-dark:     #7c3aed;
-  --theme-secondary-light:    #c4b5fd;
-  --theme-secondary-rgb:      167, 139, 250;
-  --theme-secondary-soft:     rgba(167, 139, 250, 0.1);
-
-  /* ── Status Soft (transparent backgrounds) ── */
-  --status-error-soft:        rgba(244, 63, 94, 0.1);
-  --status-success-soft:      rgba(16, 185, 129, 0.1);
-  --status-warning-soft:      rgba(245, 158, 11, 0.1);
-  --status-info:              #3b82f6;
-  --status-info-soft:         rgba(59, 130, 246, 0.1);
-  --color-error-soft:         rgba(244, 63, 94, 0.1);
-
-  /* ── RGB channel helpers (for admin CSS rgba() overlays) ── */
-  --theme-bg-alt-rgb:         10, 10, 10;
-  --theme-card-rgb:           30, 30, 30;
-  --theme-text-rgb:           237, 237, 237;
-
-  /* ── Misc missing ── */
-  --gp-neutral-900:           #171717;
-  --theme-warning:            var(--status-warning);
-}
-
-/* ── Esports Theme ── */
-.theme-esports {
-  --theme-primary:        var(--es-green);
-  --theme-primary-dark:   var(--es-green-dark);
-  --theme-primary-light:  var(--es-green-light);
-  
-  --theme-bg:             #eef7ee; 
-  --theme-bg-alt:         #f4fbf4;
-  --theme-bg-section:     #dff0df;
-  --theme-card:           var(--color-white);
-  
-  --theme-text:           #112911;
-  --theme-text-muted:     #4d694d;
-  --theme-text-inverse:   var(--color-white);
-    /* Refined Accents & Status */
-    --theme-accent: var(--theme-primary);
-    --theme-accent-soft: color-mix(in srgb, var(--theme-primary), transparent 90%);
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-success-soft: rgba(16, 185, 129, 0.1);
-    --color-warning-soft: rgba(245, 158, 11, 0.1);
-  
-  --theme-border:         rgba(55, 151, 48, 0.25);
-  --theme-input:          var(--color-white);
-}
-
-.theme-tournaments-page {
-  --theme-primary:        #379730;
-  --theme-primary-dark:   #2f8626;
-  --theme-primary-light:  #52ba44;
-  --theme-primary-rgb:    55, 151, 48;
-
-  --theme-bg:             #050505;
-  --theme-bg-alt:         #080808;
-  --theme-bg-section:     #0c0c0c;
-  --theme-card:           #0a0a0a;
-
-  --theme-text:           #ffffff;
-  --theme-text-muted:     #a3a3a3;
-  --theme-text-inverse:   #000000;
-
-  --theme-border:         rgba(55, 151, 48, 0.15);
-  --theme-input:          #121212;
-}
-
-/* ── Dev Theme ── */
-.theme-dev {
-  --theme-primary:        #4f46e5; /* indigo-600 */
-  --theme-primary-dark:   #3730a3; /* indigo-800 */
-  --theme-primary-light:  #818cf8; /* indigo-400 */
-  --theme-primary-soft:   rgba(79, 70, 229, 0.1);
-}
-
-/* ── Content Theme ── */
-.theme-content {
-  --theme-primary:        #ea580c; /* orange-600 */
-  --theme-primary-dark:   #9a3412; /* orange-800 */
-  --theme-primary-light:  #fb923c; /* orange-400 */
-  --theme-primary-soft:   rgba(234, 88, 12, 0.1);
-}
-
-/* ── Business Theme ── */
-.theme-business {
-  --theme-primary:        #0891b2; /* cyan-600 */
-  --theme-primary-dark:   #155e75; /* cyan-800 */
-  --theme-primary-light:  #22d3ee; /* cyan-400 */
-  --theme-primary-soft:   rgba(8, 145, 178, 0.1);
-}
-
-/* ── Art Theme ── */
-.theme-art {
-  --theme-primary:        #c026d3; /* fuchsia-600 */
-  --theme-primary-dark:   #86198f; /* fuchsia-800 */
-  --theme-primary-light:  #e879f9; /* fuchsia-400 */
-  --theme-primary-soft:   rgba(192, 38, 211, 0.1);
-}
-
-/* ── Writing Theme ── */
-.theme-writing {
-  --theme-primary:        #059669; /* emerald-600 */
-  --theme-primary-dark:   #065f46; /* emerald-800 */
-  --theme-primary-light:  #34d399; /* emerald-400 */
-  --theme-primary-soft:   rgba(5, 150, 105, 0.1);
-}
-
-/* ── Audio Theme ── */
-.theme-audio {
-  --theme-primary:        #2563eb; /* blue-600 */
-  --theme-primary-dark:   #1e40af; /* blue-800 */
-  --theme-primary-light:  #60a5fa; /* blue-400 */
-  --theme-primary-soft:   rgba(37, 99, 235, 0.1);
-}
-
-/* ── Blog Theme ── */
-.theme-blog {
-  --theme-primary:        var(--blog-amber);
-  --theme-primary-dark:   var(--blog-amber-dark);
-  --theme-primary-light:  var(--blog-amber-light);
-  
-  --theme-bg:             #FEF9E7;
-  --theme-bg-alt:         #f2f2f0;
-  --theme-bg-section:     #FDF3C8;
-  --theme-card:           var(--color-white);
-  
-  --theme-text:           #1a1a1a;
-  --theme-text-muted:     #6b6b6b;
-  --theme-text-inverse:   var(--color-white);
-  
-  --theme-border:         rgba(245,158,11,0.20);
-  --theme-input:          var(--color-white);
-}
-
-/* ── About Theme — dark navy (matches AboutHub hero design) ── */
-.theme-about {
-  --theme-primary:        #4fc3dc;
-  --theme-primary-dark:   #0f6f8c;
-  --theme-primary-light:  #8de0f5;
-
-  --theme-bg:             #050f23;
-  --theme-bg-alt:         #0a1a3a;
-  --theme-bg-section:     #0d2048;
-  --theme-card:           #0f2050;
-
-  --theme-text:           #e0f0ff;
-  --theme-text-muted:     #8ab0d0;
-  --theme-text-inverse:   #050f23;
-
-  --theme-border:         rgba(79,195,220,0.20);
-  --theme-input:          #0f2050;
-}
-
-/* ── Auth Theme ── */
-.theme-auth {
-  --theme-primary:        #8ee0ff;
-  --theme-primary-dark:   #538ea3;
-  --theme-primary-light:  #b3ecff;
-  
-  --theme-bg:             #8ab9c9;
-  --theme-bg-alt:         #085c7a;
-  --theme-bg-section:     #05445c;
-  --theme-card:           #085c7a;
-  
-  --theme-text:           var(--color-white);
-  --theme-text-muted:     #e0f7fa;
-  --theme-text-inverse:   #085c7a;
-  
-  --theme-border:         #538ea3;
-  --theme-input:          #2b738c;
-}
-
-/* ── Profile Theme ── */
-.theme-profile {
-  --theme-primary:        var(--profile-purple);
-  --theme-primary-dark:   var(--profile-purple-dark);
-  --theme-primary-light:  var(--profile-purple-light);
-  
-  --theme-bg:             #faf5ff;
-  --theme-bg-alt:         #ede9fe;
-  --theme-bg-section:     var(--color-white); 
-  --theme-card:           var(--color-white);
-  
-  --theme-text:           #1f2937;
-  --theme-text-muted:     #6b7280;
-  --theme-text-inverse:   var(--color-white);
-  
-  --theme-border:         #e5e7eb;
-  --theme-input:          var(--color-white);
-}
-
-/* ── Community Theme ── */
-.theme-community {
-  --theme-primary:        #7C3AED;
-  --theme-primary-dark:   #6D28D9;
-  --theme-primary-light:  #A78BFA;
-  
-  --theme-bg:             var(--neutral-50); 
-  --theme-bg-alt:         var(--neutral-100);
-  --theme-bg-section:     var(--color-white);
-  --theme-card:           var(--color-white);
-  
-  --theme-text:           var(--neutral-900);
-  --theme-text-muted:     var(--neutral-500);
-  --theme-text-inverse:   var(--color-white);
-  
-  --theme-border:         var(--neutral-200);
-  --theme-input:          var(--color-white);
-}
-
-/* ── Admin Theme ── */
-.theme-admin {
-  --theme-primary:        #f97316;
-  --theme-primary-dark:   #ea580c;
-  --theme-primary-light:  #fed7aa;
-  
-  --theme-bg:             #f4f4f4;
-  --theme-bg-alt:         #e9e9e9;
-  --theme-bg-section:     #f8f8f8;
-  --theme-card:           var(--color-white);
-  
-  --theme-text:           #111827;
-  --theme-text-muted:     #6b7280;
-  --theme-text-inverse:   var(--color-white);
-  
-  --theme-border:         #d1d5db;
-  --theme-input:          var(--color-white);
-}
-
-/* ── Contact Theme ── */
-.theme-contact {
-  --theme-primary:        #6366f1;
-  --theme-primary-dark:   #4f46e5;
-  --theme-primary-light:  #a5b4fc;
-
-  --theme-bg:             #f5f5ff;
-  --theme-bg-alt:         #eef2ff;
-  --theme-bg-section:     #e0e7ff;
-  --theme-card:           var(--color-white);
-
-  --theme-text:           #1e1b4b;
-  --theme-text-muted:     #4338ca;
-  --theme-text-inverse:   var(--color-white);
-
-  --theme-border:         rgba(99,102,241,0.20);
-  --theme-input:          var(--color-white);
-}
-
-/* ── Collection (Game Post Collection) Theme ── */
-.theme-collection {
-  --theme-primary:        #0EA5E9;
-  --theme-primary-dark:   #0284C7;
+/* ─────────────────────────────────────────────────────────────
+   THEME: GAMES  (/games, /games/:slug)
+   Sky-blue accent on clean white
+───────────────────────────────────────────────────────────── */
+.theme-games {
+  --theme-primary:        var(--accent-games);
+  --theme-primary-dark:   var(--accent-games-dark);
   --theme-primary-light:  #38BDF8;
   --theme-primary-soft:   rgba(14, 165, 233, 0.08);
   --theme-primary-rgb:    14, 165, 233;
 
-  --theme-bg:             #FFFFFF;
-  --theme-bg-alt:         #F0F9FF;
-  --theme-bg-section:     #E0F2FE;
-  --theme-card:           #FFFFFF;
+  --theme-secondary:      #7C3AED;
+  --theme-secondary-soft: rgba(124, 58, 237, 0.08);
 
-  --theme-text:           #0C1A2E;
-  --theme-text-muted:     #475569;
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--accent-games-bg);
+  --theme-bg-section:     var(--slate-50);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
   --theme-text-inverse:   #FFFFFF;
 
-  --theme-border:         #BAE6FD;
-  --theme-border-strong:  #7DD3FC;
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--accent-games-border);
   --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+
+  --theme-shadow-sm: 0 1px 3px rgba(14,165,233,0.06);
+  --theme-shadow-md: 0 4px 16px rgba(14,165,233,0.10);
+  --theme-shadow-lg: 0 8px 32px rgba(14,165,233,0.12);
 }
 
-/* ── Tournaments Theme ── */
-.theme-tournaments {
-  --theme-primary:        #e11d48; /* rose-600 */
-  --theme-primary-dark:   #be123c; /* rose-700 */
-  --theme-primary-light:  #fb7185; /* rose-400 */
-  --theme-primary-rgb:    225, 29, 72;
-  
-  --theme-bg:             #050505;
-  --theme-bg-alt:         #080808;
-  --theme-bg-section:     #0c0c0c;
-  --theme-card:           #0a0a0a;
-  
-  --theme-text:           #ffffff;
-  --theme-text-muted:     #a3a3a3; /* neutral-400 */
-  --theme-text-inverse:   #000000;
-  
-  --theme-border:         rgba(255, 255, 255, 0.05);
-  --theme-input:          #121212;
-}
-
-/* ── Game Post / Dynamic Defaults ── */
+/* GamePost — per-game brand color overrides --theme-primary */
 .theme-gamepost {
-  --gp-primary:           var(--gp-red);
-  --gp-primary-dark:      var(--gp-red-dark);
-  --gp-primary-light:     var(--gp-red-light);
-  --gp-primary-alpha:     rgba(229, 57, 53, 0.12);
-  --gp-primary-alpha-low: rgba(229, 57, 53, 0.06);
-  /* camelCase aliases for legacy component usage */
-  --gp-primaryDark:       var(--gp-primary-dark);
-  --gp-primaryLight:      var(--gp-primary-light);
-  --gp-bg-page:        #fff5f5;
-  --gp-bg-section:     #ffebee;
-  --gp-bg-card:        var(--color-white);
-  --gp-bg-card-alt:    #fff8f8;
-  --gp-border:         #ffcdd2;
-  --gp-border-strong:  #ef9a9a;
-  --gp-text-heading:   var(--gp-red-dark);
-  --gp-text-body:      #1f2937;
-  --gp-text-muted:     #6b7280;
-  --gp-text-on-accent: var(--color-white);
-  --gp-tag-bg:         rgba(229, 57, 53, 0.10);
-  --gp-btn-bg:         var(--gp-red);
-  --gp-btn-hover:      var(--gp-red-dark);
-  --gp-quote-bg:       var(--gp-red);
-  --gp-icon-circle-bg: #ffebee;
-  --gp-icon-circle-fg: var(--gp-red);
-  --gp-cta-gradient:   linear-gradient(135deg, var(--gp-red) 0%, var(--gp-red-dark) 100%);
-  --gp-hero-overlay:   rgba(0, 0, 0, 0.60);
-  --gp-accent-bar:     3px solid var(--gp-red);
+  /* theme-primary is set inline by ThemeProvider from game.brand_color */
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.08);
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--slate-50);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-border:         var(--slate-200);
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
 }
 
-/* ── Navbar adaptive hover states ── */
-.nav-platform-link:hover {
-  color: var(--theme-primary);
-  background-color: color-mix(in srgb, var(--theme-primary) 5%, transparent);
-}
-.nav-explore-item:hover {
-  background-color: color-mix(in srgb, var(--theme-primary) 6%, transparent);
-}
-.nav-explore-item:hover .nav-explore-label {
-  color: var(--theme-primary);
-}
-.nav-avatar-item:hover {
-  background-color: color-mix(in srgb, var(--theme-primary) 6%, transparent);
-  color: var(--theme-primary);
+/* ─────────────────────────────────────────────────────────────
+   THEME: BLOG  (/blog, /blog/:slug)
+   Warm amber editorial feel
+───────────────────────────────────────────────────────────── */
+.theme-blog {
+  --theme-primary:        var(--accent-blog);
+  --theme-primary-dark:   var(--accent-blog-dark);
+  --theme-primary-light:  #F59E0B;
+  --theme-primary-soft:   rgba(217, 119, 6, 0.08);
+  --theme-primary-rgb:    217, 119, 6;
+
+  --theme-secondary:      #7C3AED;
+  --theme-secondary-soft: rgba(124, 58, 237, 0.08);
+
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--accent-blog-bg);
+  --theme-bg-section:     var(--slate-50);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--accent-blog-border);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
 }
 
-.theme-home {
-  --theme-primary: #1D6ADB;
-  --theme-primary-dark: #1558B8;
-  --theme-primary-light: #3B82F6;
-  --theme-primary-soft: rgba(29, 106, 219, 0.08);
-  --theme-primary-rgb: 29, 106, 219;
-  --theme-bg: #FFFFFF;
-  --theme-bg-alt: #F8FAFC;
-  --theme-bg-section: #F1F5F9;
-  --theme-bg-dark: #0F172A;
-  --theme-card: #FFFFFF;
-  --theme-text: #0F172A;
-  --theme-text-muted: #64748B;
-  --theme-text-subtle: #94A3B8;
-  --theme-text-inverse: #FFFFFF;
-  --theme-border: #E2E8F0;
-  --theme-border-strong: #CBD5E1;
-  --home-games-bg: #F0F9FF;
-  --home-games-accent: #0EA5E9;
-  --home-tourney-bg: #F0FDF4;
-  --home-tourney-accent: #16A34A;
-  --home-profile-bg: #FAF5FF;
-  --home-profile-accent: #7C3AED;
-  --home-community-bg: #FFF7ED;
-  --home-community-accent: #EA580C;
+/* ─────────────────────────────────────────────────────────────
+   THEME: ESPORTS  (/tournaments)
+   Competitive dark — sections alternate dark/light
+───────────────────────────────────────────────────────────── */
+.theme-esports {
+  --theme-primary:        var(--accent-esports);
+  --theme-primary-dark:   var(--accent-esports-dark);
+  --theme-primary-light:  #22C55E;
+  --theme-primary-soft:   rgba(22, 163, 74, 0.12);
+  --theme-primary-rgb:    22, 163, 74;
+
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.12);
+
+  --theme-bg:             var(--slate-900);
+  --theme-bg-alt:         var(--slate-800);
+  --theme-bg-section:     #0A1628;
+  --theme-bg-dark:        #050D1A;
+  --theme-bg-surface:     var(--slate-800);
+  --theme-card:           var(--slate-800);
+  --theme-card-hover:     var(--slate-700);
+  --theme-card-rgb:       30, 41, 59;
+
+  --theme-text:           #F0F4F8;
+  --theme-text-muted:     var(--slate-400);
+  --theme-text-subtle:    var(--slate-500);
+  --theme-text-inverse:   var(--slate-900);
+
+  --theme-border:         rgba(255, 255, 255, 0.08);
+  --theme-border-strong:  rgba(255, 255, 255, 0.16);
+  --theme-input:          var(--slate-700);
+
+  --theme-danger:         #F87171;
+  --theme-danger-muted:   rgba(248, 113, 113, 0.12);
+
+  --theme-shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --theme-shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --theme-shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   THEME: PROFILE  (/profile, /u/:username)
+   Violet accent on clean white
+───────────────────────────────────────────────────────────── */
+.theme-profile {
+  --theme-primary:        var(--accent-profile);
+  --theme-primary-dark:   var(--accent-profile-dark);
+  --theme-primary-light:  #8B5CF6;
+  --theme-primary-soft:   rgba(124, 58, 237, 0.08);
+  --theme-primary-rgb:    124, 58, 237;
+
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.08);
+
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--accent-profile-bg);
+  --theme-bg-section:     var(--slate-50);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--accent-profile-border);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   THEME: COMMUNITY  (/community)
+   Orange accent, warm feel
+───────────────────────────────────────────────────────────── */
+.theme-community {
+  --theme-primary:        var(--accent-community);
+  --theme-primary-dark:   var(--accent-community-dark);
+  --theme-primary-light:  #F97316;
+  --theme-primary-soft:   rgba(234, 88, 12, 0.08);
+  --theme-primary-rgb:    234, 88, 12;
+
+  --theme-secondary:      #7C3AED;
+  --theme-secondary-soft: rgba(124, 58, 237, 0.08);
+
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--accent-community-bg);
+  --theme-bg-section:     var(--slate-50);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--accent-community-border);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   THEME: AUTH  (/login, /signup)
+   Steel-blue, split layout
+───────────────────────────────────────────────────────────── */
+.theme-auth {
+  --theme-primary:        #1E6F9F;
+  --theme-primary-dark:   #1A5F8A;
+  --theme-primary-light:  #2E87B8;
+  --theme-primary-soft:   rgba(30, 111, 159, 0.08);
+  --theme-primary-rgb:    30, 111, 159;
+
+  --theme-secondary:      #7C3AED;
+  --theme-secondary-soft: rgba(124, 58, 237, 0.08);
+
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--slate-50);
+  --theme-bg-section:     #EDF4F9;
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--slate-300);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   THEME: ADMIN  (/admin/*)
+   Slate dark sidebar, white content area
+───────────────────────────────────────────────────────────── */
+.theme-admin {
+  --theme-primary:        var(--gzs-blue);
+  --theme-primary-dark:   var(--gzs-blue-dark);
+  --theme-primary-light:  var(--gzs-blue-light);
+  --theme-primary-soft:   var(--gzs-blue-soft);
+  --theme-primary-rgb:    var(--gzs-blue-rgb);
+
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.08);
+
+  /* Admin-specific: sidebar is dark, content is light */
+  --theme-bg:             var(--slate-100);    /* page background */
+  --theme-bg-alt:         var(--slate-50);     /* content panels */
+  --theme-bg-section:     var(--slate-900);    /* sidebar */
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;             /* all cards are white */
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  /* sidebar text is light */
+  --admin-sidebar-bg:     var(--slate-900);
+  --admin-sidebar-text:   var(--slate-300);
+  --admin-sidebar-active: var(--gzs-blue);
+  --admin-sidebar-hover:  rgba(255,255,255,0.06);
+  --admin-navbar-bg:      #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--slate-300);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+
+  --theme-shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+  --theme-shadow-md: 0 4px 16px rgba(15,23,42,0.08);
+  --theme-shadow-lg: 0 8px 32px rgba(15,23,42,0.10);
+
+  /* Status (admin-specific aliases) */
+  --status-success:       #16A34A;
+  --status-success-bg:    #F0FDF4;
+  --status-success-soft:  #F0FDF4;
+  --status-success-text:  #15803D;
+  --status-error:         #DC2626;
+  --status-error-bg:      #FEF2F2;
+  --status-error-soft:    #FEF2F2;
+  --status-error-text:    #B91C1C;
+  --status-warning:       #D97706;
+  --status-warning-bg:    #FFFBEB;
+  --status-warning-soft:  #FFFBEB;
+  --status-warning-text:  #92400E;
+  --status-draft-bg:      #F1F5F9;
+  --status-draft-text:    #475569;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ROOT FALLBACK (applied when no theme class is on <html>)
+   Defaults to home-light — never dark by default
+───────────────────────────────────────────────────────────── */
+:root {
+  --theme-primary:        var(--gzs-blue);
+  --theme-primary-dark:   var(--gzs-blue-dark);
+  --theme-primary-light:  var(--gzs-blue-light);
+  --theme-primary-soft:   var(--gzs-blue-soft);
+  --theme-primary-rgb:    var(--gzs-blue-rgb);
+
+  --theme-secondary:      #0EA5E9;
+  --theme-secondary-soft: rgba(14, 165, 233, 0.08);
+
+  --theme-bg:             #FFFFFF;
+  --theme-bg-alt:         var(--slate-50);
+  --theme-bg-section:     var(--slate-100);
+  --theme-bg-dark:        var(--slate-900);
+  --theme-bg-surface:     #FFFFFF;
+  --theme-card:           #FFFFFF;
+  --theme-card-rgb:       255, 255, 255;
+
+  --theme-text:           var(--slate-900);
+  --theme-text-muted:     var(--slate-500);
+  --theme-text-subtle:    var(--slate-400);
+  --theme-text-inverse:   #FFFFFF;
+
+  --theme-border:         var(--slate-200);
+  --theme-border-strong:  var(--slate-300);
+  --theme-input:          #FFFFFF;
+
+  --theme-danger:         var(--status-error);
+  --theme-danger-muted:   var(--status-error-bg);
+
+  --theme-shadow-sm: 0 1px 3px rgba(15,23,42,0.06);
+  --theme-shadow-md: 0 4px 16px rgba(15,23,42,0.08);
+  --theme-shadow-lg: 0 8px 32px rgba(15,23,42,0.10);
+
+  /* Status */
+  --status-success:       #16A34A;
+  --status-success-bg:    #F0FDF4;
+  --status-success-soft:  #F0FDF4;
+  --status-success-text:  #15803D;
+  --status-error:         #DC2626;
+  --status-error-bg:      #FEF2F2;
+  --status-error-soft:    #FEF2F2;
+  --status-error-text:    #B91C1C;
+  --status-warning:       #D97706;
+  --status-warning-bg:    #FFFBEB;
+  --status-warning-soft:  #FFFBEB;
+  --status-warning-text:  #92400E;
+  --status-info:          #2563EB;
+  --status-info-bg:       #EFF6FF;
+  --status-info-soft:     #EFF6FF;
+  --status-info-text:     #1D4ED8;
+  --status-draft-bg:      #F1F5F9;
+  --status-draft-text:    #475569;
 }

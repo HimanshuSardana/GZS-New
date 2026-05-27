@@ -6,6 +6,12 @@ import { MOCK_NOTIFICATIONS } from '@/shared/data/notificationsData';
 import { MOCK_FOLLOWERS, MOCK_FRIENDS, MOCK_MASTER_PROFILE, MOCK_POSTS, MOCK_PROJECTS, MOCK_PUBLIC_PROFILES, MOCK_SKILLS, MOCK_SUB_PROFILES } from '@/shared/data/profileData';
 import { MOCK_BRACKETS, MOCK_RESULTS, MOCK_TOURNAMENTS } from '@/shared/data/tournamentData';
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+if (!USE_MOCK) {
+  console.info('[GZS] Mock fallback DISABLED — using real APIs');
+}
+
 const normalizeUrl = (url = '') => url.replace(/^https?:\/\/[^/]+/i, '');
 const stripQuery = (url = '') => url.split('?')[0];
 
@@ -217,4 +223,26 @@ export const handleMockFallback = async (method, url, data, params) => {
     }
 
     return null;
+};
+
+/**
+ * Installs a response interceptor on an axios client that catches network
+ * errors and returns mock data. No-op when VITE_USE_MOCK !== 'true'.
+ */
+export const installMockFallback = (client) => {
+  if (!USE_MOCK) return;
+
+  client.interceptors.response.use(null, async (error) => {
+    if (!error.response) {
+      const { config } = error;
+      const result = await handleMockFallback(
+        config.method,
+        config.url,
+        config.data ? JSON.parse(config.data) : undefined,
+        config.params,
+      );
+      if (result !== null) return { data: result, status: 200, headers: {}, config, mock: true };
+    }
+    return Promise.reject(error);
+  });
 };

@@ -1,4 +1,4 @@
-export default function SystemRequirementSection({ sys }) {
+﻿export default function SystemRequirementSection({ sys }) {
   if (!sys) return null;
 
   const rows = [
@@ -11,59 +11,50 @@ export default function SystemRequirementSection({ sys }) {
   ].filter(r => r.min || r.rec);
 
   return (
-    <section className="section-padding gp-animate-in relative">
-      <style>{`
-        @keyframes shimmer-spec {
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
-
-      <div className="container-global">
-        <div className="text-center mb-16 gp-animate-in relative z-10">
+    <section className="gp-content-section gp-section-alt relative overflow-hidden">
+      <div className="relative z-10">
+        <div className="text-center mb-16 gp-animate-in">
           <span className="gp-section-label flex items-center justify-center gap-3">
-            <span className="w-8 h-[2px] bg-[var(--gp-primary)]" />
-            PERFORMANCE
-            <span className="w-8 h-[2px] bg-[var(--gp-primary)]" />
+            THE SPECS
           </span>
-          <h2 className="gp-hero-title text-6xl md:text-7xl text-[var(--theme-text)]">
+          <h2 className="gp-section-heading !border-b-0 mx-auto max-w-max">
             SYSTEM REQUIREMENTS
           </h2>
+          <div className="w-24 h-1 bg-[var(--gp-primary)] mx-auto -mt-2"></div>
         </div>
 
-        <div className="rounded-2xl overflow-hidden border border-[var(--gp-border)] shadow-[0_15px_40px_rgba(0,0,0,0.06)] gp-animate-scale relative z-10 bg-white backdrop-blur-2xl">
-          {/* Accent top bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-[var(--gp-primary)]" />
-
-          {/* Header Row */}
-          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_1fr] bg-[var(--gp-primary)] text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(255,255,255,0.05)_50%)] bg-[length:100%_4px] pointer-events-none mix-blend-screen opacity-50" />
-            <div className="gp-hero-title text-lg px-8 py-6 tracking-widest border-b md:border-b-0 md:border-r border-white/20 uppercase relative z-10 flex items-center gap-3">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-sm" />
+        <div className="gp-card !p-0 overflow-hidden bg-[var(--theme-card)]">
+          {/* Desktop Table Header */}
+          <div className="hidden md:grid grid-cols-[200px_1fr_1fr] bg-[var(--gp-primary)] text-[var(--theme-text-inverse)]">
+            <div className="text-[11px] font-black px-8 py-6 tracking-widest uppercase border-r border-white/10">
               Component
             </div>
-            <div className="gp-hero-title text-lg px-8 py-6 tracking-widest border-b md:border-b-0 md:border-r border-white/20 uppercase relative z-10">Minimum</div>
-            <div className="gp-hero-title text-lg px-8 py-6 tracking-widest uppercase relative z-10">Recommended</div>
+            <div className="text-[11px] font-black px-8 py-6 tracking-widest uppercase border-r border-white/10">Minimum</div>
+            <div className="text-[11px] font-black px-8 py-6 tracking-widest uppercase">Recommended</div>
           </div>
 
-          {/* Table Rows */}
-          <div className="bg-white/80">
+          {/* Requirements Content */}
+          <div>
             {rows.map(row => (
               <div
                 key={row.label}
-                className="grid grid-cols-1 md:grid-cols-[200px_1fr_1fr] border-b border-[var(--gp-border)] last:border-0 hover:bg-[var(--gp-bg-page)] transition-all duration-300 group"
+                className="flex flex-col md:grid md:grid-cols-[200px_1fr_1fr] border-b border-[var(--theme-border)] last:border-0 hover:bg-[var(--theme-bg-section)] transition-all group"
               >
-                <div className="px-8 py-6 font-black text-[var(--theme-text)] text-base uppercase tracking-widest group-hover:text-[var(--gp-primaryDark)] transition-colors border-b md:border-b-0 border-[var(--gp-border)] flex items-center">
+                {/* Component Label */}
+                <div className="px-6 py-4 md:px-8 md:py-6 font-black text-[var(--theme-text)] text-[11px] uppercase tracking-widest border-b md:border-b-0 border-[var(--theme-border)] flex items-center bg-[var(--theme-bg-section)] md:bg-transparent">
                   {row.label}
                 </div>
-                <div className="px-8 py-6 text-[var(--theme-text)]/80 text-sm font-semibold md:border-l border-[var(--gp-border)] uppercase border-b md:border-b-0 leading-relaxed font-mono relative overflow-hidden group-hover:text-[var(--theme-text)] transition-colors">
+
+                {/* Minimum Spec */}
+                <div className="px-6 py-4 md:px-8 md:py-6 text-[var(--theme-text-muted)] text-[13px] font-bold md:border-l border-[var(--theme-border)] uppercase leading-relaxed font-mono">
+                  <span className="block md:hidden text-[10px] text-[var(--gp-primary)] mb-1 font-black">MINIMUM</span>
                   {row.min || '—'}
                 </div>
-                <div className="px-8 py-6 text-[var(--theme-text)] text-sm font-bold md:border-l border-[var(--gp-border)] uppercase leading-relaxed font-mono relative overflow-hidden group-hover:bg-[var(--gp-primary)]/5 transition-colors duration-300">
+
+                {/* Recommended Spec */}
+                <div className="px-6 py-4 md:px-8 md:py-6 text-[var(--theme-text)] text-[13px] font-black md:border-l border-[var(--theme-border)] uppercase leading-relaxed font-mono">
+                  <span className="block md:hidden text-[10px] text-[var(--gp-primary)] mb-1 font-black">RECOMMENDED</span>
                   {row.rec || '—'}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--gp-primary)]/10 to-transparent -translate-x-full"
-                    style={{ animation: 'none' }}
-                  />
                 </div>
               </div>
             ))}

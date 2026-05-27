@@ -5,6 +5,7 @@ import { FiArrowLeft, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useToast } from '@/shared/components/Toast';
 import { mockApiService } from '@services/mockApiService';
 import { AdminPageHero, AdminPanel, AdminMetrics, AdminEmptyState } from './AdminContentShell';
+import AIFeaturePlaceholder from '@/shared/components/AIFeaturePlaceholder';
 import { ensureArray, safeString, slugify, toIsoDate } from './adminFormUtils';
 
 const DOMAIN_OPTIONS = ['Esports', 'Art', 'Writing', 'Music', 'Dev', 'General'];
@@ -341,6 +342,14 @@ export default function TournamentEditorForm({ mode = 'create' }) {
           <Input label="Tournament Start" type="datetime-local" value={form.tournamentStart} onChange={(event) => updateField('tournamentStart', event.target.value)} />
           <Input label="Expected Duration" value={form.expectedDuration} onChange={(event) => updateField('expectedDuration', event.target.value)} placeholder="3 days" />
           <Input label="Finals Date" type="datetime-local" value={form.finalsDate} onChange={(event) => updateField('finalsDate', event.target.value)} />
+          <AIFeaturePlaceholder
+            title="Match Time Optimisation"
+            description="Given participant timezones from registration data, AI suggests match time slots that minimise scheduling conflicts."
+            phase="Phase 2"
+            inputLabel="Paste participant timezone data or let system auto-collect"
+            inputType="textarea"
+            actionLabel="Optimise Schedule"
+          />
           <label>
             <span>Timezone</span>
             <select value={form.timezone} onChange={(event) => updateField('timezone', event.target.value)}>
@@ -364,6 +373,14 @@ export default function TournamentEditorForm({ mode = 'create' }) {
               <Input label="Advance Count" value={item.advanceCount} onChange={(event) => updateListItem('stages', index, { advanceCount: event.target.value })} />
             </div>
           )}
+        />
+        <AIFeaturePlaceholder
+          title="Smart Bracket Seeding"
+          description="Use verified rank data from Esports sub-profiles to seed brackets fairly. Admin gets a seeding suggestion and can override."
+          phase="Phase 2"
+          inputLabel="Seeding runs after registration closes"
+          inputType="url"
+          actionLabel="Generate Seeding"
         />
         <Area label="Rules Summary" value={form.rulesSummary} onChange={(event) => updateField('rulesSummary', event.target.value)} hint="Shown inline on the public detail page." />
         <Input label="Full Rules Document" value={form.fullRulesDocument} onChange={(event) => updateField('fullRulesDocument', event.target.value)} placeholder="PDF URL or external link" />

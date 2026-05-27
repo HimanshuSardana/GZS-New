@@ -3,17 +3,76 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'url'
 
+// In production builds, all imports of mockApiService and shared/data/* are
+// redirected to a single virtual stub module so the real mock data (~100 KB per
+// file) never enters the bundle graph.
+const MOCK_STUB_ID = '\0vite-mock-stub';
+
+const mockGuardPlugin = () => {
+  let resolvedCfg;
+  return {
+    name: 'vite-plugin-mock-guard',
+    // Run before Vite's alias resolver so resolveId sees the raw specifier.
+    enforce: 'pre',
+    configResolved(config) {
+      resolvedCfg = config;
+      const useMock =
+        config.env.VITE_USE_MOCK === 'true' ||
+        process.env.VITE_USE_MOCK === 'true';
+      if (useMock && config.mode === 'production') {
+        throw new Error(
+          '[vite-plugin-mock-guard] VITE_USE_MOCK=true cannot be used with MODE=production. ' +
+          'Remove VITE_USE_MOCK from your environment before running `vite build`.',
+        );
+      }
+    },
+    resolveId(source) {
+      if (resolvedCfg?.mode !== 'production') return null;
+      const norm = source.replace(/\\/g, '/');
+      if (
+        norm.includes('services/mockApiService') ||
+        norm.includes('shared/data/')
+      ) {
+        // Collapse all mock imports to one virtual module so Rollup
+        // deduplicates them; no mock chunk is emitted.
+        return MOCK_STUB_ID;
+      }
+      return null;
+    },
+    load(id) {
+      // syntheticNamedExports: true tells Rollup to synthesize any named import
+      // as a property lookup on the default export ({}) rather than raising a
+      // "not exported" static error. All named imports resolve to undefined at
+      // runtime, which is fine because mock fallbacks are never called in prod.
+      if (id === MOCK_STUB_ID) {
+        return { code: 'export default {};', syntheticNamedExports: true };
+      }
+      // Belt-and-suspenders: also stub by resolved absolute path.
+      if (resolvedCfg?.mode === 'production') {
+        const norm = id.replace(/\\/g, '/');
+        if (
+          norm.includes('/services/mockApiService') ||
+          norm.includes('/shared/data/')
+        ) {
+          return { code: 'export default {};', syntheticNamedExports: true };
+        }
+      }
+    },
+  };
+};
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), mockGuardPlugin()],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      // Forwards /api/cms/* to the CMS service (Docker host port 8001).
+      // Set VITE_CMS_API_URL=/api/cms in .env.local to activate this proxy.
+      '/api/cms': {
+        target: 'http://localhost:8001',
         changeOrigin: true,
-        secure: false,
-      }
-    }
+      },
+    },
   },
   resolve: {
     alias: {
@@ -68,12 +127,6 @@ export default defineConfig({
           if (id.includes('src/features/profile')) {
             return 'chunk-profile';
           }
-          if (id.includes('src/services/mockApiService')) {
-            return 'chunk-mock';
-          }
-          if (id.includes('src/shared/data')) {
-            return 'chunk-data';
-          }
           if (id.includes('src/features/admin')) {
             return 'chunk-admin';
           }
@@ -99,7 +152,7 @@ export default defineConfig({
       },
     },
     // Optimize chunk size warnings
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     // Use esbuild for minification (no additional dependencies needed)
     minify: 'esbuild',
     // Source maps for production debugging (optional, remove in production if size matters)

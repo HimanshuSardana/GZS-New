@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FiCheckCircle, FiCircle, FiX, FiArrowRight, FiLock, FiCheck, FiPlus, FiShield, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
 import useProfileStore from '@/store/profile/useProfileStore';
 
 /**

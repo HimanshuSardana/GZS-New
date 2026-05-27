@@ -1,321 +1,1084 @@
-# GzoneSphere Phase 2 API Documentation
+# GzoneSphere Core API — Reference
 
-**Base URL**: `http://localhost:8000`  
-**API Version**: 2.0.0  
-**Phase**: Phase 2 - Profiles, Community, Admin, Progression
+Base URL: `http://localhost:8000`  
+Documentation (Swagger UI): `http://localhost:8000/docs`
 
-## Quick Start
+---
 
-### 1. Start the API
-```bash
-cd backend/core-api
-pip install -r requirements.txt
-python -m uvicorn main:app --reload
+## Response Envelope
+
+Every endpoint returns responses in this shape:
+
+```json
+// Success
+{
+  "data": { ... },
+  "meta": {},
+  "error": null
+}
+
+// Error
+{
+  "data": null,
+  "error": {
+    "code": "SOME_ERROR_CODE",
+    "message": "Human-readable description.",
+    "details": {}
+  }
+}
 ```
 
-### 2. Access API Documentation
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+The frontend Axios client (`src/services/api/core.js`) automatically unwraps the envelope, so every `.then(r => r.data)` call in service files receives the inner `data` payload directly.
 
-### 3. Create .env file
-Copy `.env.example` to `.env` and update with your PostgreSQL credentials.
+---
+
+## JWT Token Structure
+
+Tokens are HS256 JWTs signed with the `SECRET_KEY` env variable.
+
+**Access token payload:**
+```json
+{
+  "sub": "<user-uuid>",
+  "type": "access",
+  "role": "user | admin | super_admin",
+  "exp": "<unix-timestamp>"
+}
+```
+
+**Refresh token payload:**
+```json
+{
+  "sub": "<user-uuid>",
+  "type": "refresh",
+  "exp": "<unix-timestamp>"
+}
+```
+
+Lifetime: access tokens expire in `ACCESS_TOKEN_EXPIRE_MINUTES` (default 15 min), refresh tokens in `REFRESH_TOKEN_EXPIRE_DAYS` (default 7 days).
 
 ---
 
 ## Authentication
 
-All protected endpoints require a Bearer token in the Authorization header:
+Endpoints marked **Auth: Yes** require the header:
+
 ```
-Authorization: Bearer {access_token}
-```
-
-### Login Flow
-```bash
-# 1. Sign up
-curl -X POST http://localhost:8000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "username": "testuser", "password": "securepassword123"}'
-
-# Response: { "access_token": "...", "user_id": "...", ... }
-
-# 2. Use token for subsequent requests
-curl -X GET http://localhost:8000/profiles/me \
-  -H "Authorization: Bearer {access_token}"
+Authorization: Bearer <access_token>
 ```
 
 ---
 
-## API Endpoints by Category
+## /auth — Authentication
 
-### Auth Routes (`/auth`)
+### POST /auth/register
 
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| POST | `/auth/signup` | ❌ | Register new user |
-| POST | `/auth/login` | ❌ | Login and get token |
-| POST | `/auth/refresh` | ✅ | Refresh access token |
-| GET | `/auth/me` | ✅ | Get current user info |
+Create a new user account. Also creates a master profile automatically.
 
-**Example - Signup**:
-```bash
-curl -X POST http://localhost:8000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "username": "gamedev123",
-    "password": "SecurePassword123!"
-  }'
-```
+**Auth:** No
 
----
-
-### Profile Routes (`/profiles`)
-
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| GET | `/profiles/me` | ✅ | Get my master profile |
-| GET | `/profiles/public/{username}` | ❌ | Get public profile |
-| PATCH | `/profiles/me` | ✅ | Update my master profile |
-| POST | `/profiles/sub` | ✅ | Create sub-profile (domain-specific) |
-| GET | `/profiles/sub/{domain}` | ✅ | Get my sub-profile for domain (dev, esports, etc.) |
-| PATCH | `/profiles/sub/{domain}` | ✅ | Update my sub-profile |
-| POST | `/profiles/sub/{domain}/skills` | ✅ | Add skill to sub-profile |
-| GET | `/profiles/sub/{domain}/skills` | ✅ | Get skills for sub-profile |
-
-**Example - Create Sub-Profile**:
-```bash
-curl -X POST http://localhost:8000/profiles/sub \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "domain": "dev",
-    "username": "gamedev_pro",
-    "primary_role": "Game Designer",
-    "headline": "Indie game designer specializing in narrative-driven RPGs",
-    "experience_level": "Advanced"
-  }'
-```
-
----
-
-### Community Routes (`/community`)
-
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| GET | `/community/branches` | ❌ | List all branches |
-| GET | `/community/branches/{slug}` | ❌ | Get branch details |
-| GET | `/community/branches/{slug}/channels` | ❌ | List branch channels |
-| POST | `/community/channels/{id}/messages` | ✅ | Post message to channel |
-| GET | `/community/channels/{id}/messages` | ❌ | Get channel messages |
-| POST | `/community/branches/{slug}/lfg` | ✅ | Create LFG post |
-| GET | `/community/branches/{slug}/lfg` | ❌ | Get LFG posts |
-| POST | `/community/branches/{slug}/showcase` | ✅ | Create showcase post |
-| GET | `/community/branches/{slug}/showcase` | ❌ | Get showcase posts |
-| POST | `/community/branches/{slug}/events` | ✅ | Create event |
-| GET | `/community/branches/{slug}/events` | ❌ | Get events |
-| POST | `/community/events/{id}/rsvp` | ✅ | RSVP to event |
-
-**Example - Post Message to Channel**:
-```bash
-curl -X POST http://localhost:8000/community/channels/general-dev/messages \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "Just finished implementing networked gameplay for my indie game!",
-    "media_urls": ["https://example.com/screenshot.png"]
-  }'
-```
-
-**Example - Create LFG Post**:
-```bash
-curl -X POST http://localhost:8000/community/branches/dev/lfg \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "goal_type": "find_collaborators",
-    "description": "Looking for UI/UX designer for indie RPG project. 6-month commitment.",
-    "availability_window": "ongoing",
-    "timezone": "UTC",
-    "contact_preference": "dm"
-  }'
-```
-
----
-
-### Admin Routes (`/admin`)
-
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| GET | `/admin/users` | ✅ Admin | List all users |
-| GET | `/admin/users/{id}` | ✅ Admin | Get user details |
-| POST | `/admin/users/{id}/suspend` | ✅ Admin | Suspend user |
-| POST | `/admin/users/{id}/ban` | ✅ Super | Ban user permanently |
-| GET | `/admin/verifications` | ✅ Admin | List verification queue |
-| POST | `/admin/verifications/{id}/{action}` | ✅ Admin | Review skill verification |
-| GET | `/admin/moderation` | ✅ Admin | List moderation queue |
-| POST | `/admin/moderation/{id}/{action}` | ✅ Admin | Take moderation action |
-| GET | `/admin/companies` | ✅ Admin | List companies |
-| POST | `/admin/companies/{id}/verify` | ✅ Super | Verify company |
-
-**Example - List Users**:
-```bash
-curl -X GET "http://localhost:8000/admin/users?platform_level=Hustler&trust_score_min=5.0" \
-  -H "Authorization: Bearer {admin_token}"
-```
-
-**Example - Approve Skill Verification**:
-```bash
-curl -X POST http://localhost:8000/admin/verifications/verification-id/approve \
-  -H "Authorization: Bearer {admin_token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reviewer_notes": "GitHub repo shows solid C++ game development experience"
-  }'
-```
-
----
-
-### Progression Routes (`/progression`)
-
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| GET | `/progression/user/stats` | ✅ | Get my XP, level, trust score |
-| POST | `/progression/award-xp` | ❌ | Award XP (internal) |
-| GET | `/progression/user/trust-score` | ✅ | Get detailed trust score breakdown |
-| POST | `/progression/recalculate-trust-scores` | ❌ | Recalculate all trust scores |
-
-**Example - Get My Stats**:
-```bash
-curl -X GET http://localhost:8000/progression/user/stats \
-  -H "Authorization: Bearer {token}"
-```
-
----
-
-## API Response Format
-
-All responses follow this structure:
-
+**Request:**
 ```json
 {
-  "success": true,
-  "message": "Description of result",
+  "username": "nx_zero",
+  "email": "nx_zero@gzs.com",
+  "password": "GZS@demo2025"
+}
+```
+
+Password rules: min 8 chars, at least one uppercase, one lowercase, one number.
+
+**Response (201):**
+```json
+{
   "data": {
-    "key": "value"
-  },
-  "errors": null
+    "user_id": "uuid",
+    "username": "nx_zero",
+    "email": "nx_zero@gzs.com",
+    "message": "Account created. Check email for OTP."
+  }
 }
 ```
 
-**Error Response**:
+**Errors:** `EMAIL_TAKEN` (409), `USERNAME_TAKEN` (409), `USERNAME_RESERVED` (409), `PASSWORD_TOO_SHORT` (422)
+
+**curl:**
+```bash
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"nx_zero","email":"nx_zero@gzs.com","password":"GZS@demo2025"}'
+```
+
+---
+
+### POST /auth/login
+
+**Auth:** No
+
+**Request:**
 ```json
 {
-  "success": false,
-  "message": "Error description",
-  "errors": ["Specific error 1", "Specific error 2"]
+  "email": "nx_zero@gzs.com",
+  "password": "GZS@demo2025"
+}
+```
+
+**Response (200):**
+```json
+{
+  "data": {
+    "access_token": "eyJ...",
+    "refresh_token": "eyJ...",
+    "token_type": "bearer",
+    "user": {
+      "id": "uuid",
+      "username": "nx_zero",
+      "email": "nx_zero@gzs.com",
+      "role": "user"
+    }
+  }
+}
+```
+
+**Errors:** `INVALID_CREDENTIALS` (401)
+
+**curl:**
+```bash
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"nx_zero@gzs.com","password":"GZS@demo2025"}'
+```
+
+---
+
+### POST /auth/refresh
+
+Exchange a valid refresh token for a new access token.
+
+**Auth:** No
+
+**Request:**
+```json
+{
+  "refresh_token": "eyJ..."
+}
+```
+
+**Response (200):**
+```json
+{
+  "data": {
+    "access_token": "eyJ...",
+    "token_type": "bearer"
+  }
+}
+```
+
+**Errors:** `INVALID_REFRESH_TOKEN` (401), `INVALID_TOKEN_TYPE` (401)
+
+**curl:**
+```bash
+curl -X POST http://localhost:8000/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token":"eyJ..."}'
+```
+
+---
+
+### POST /auth/logout
+
+Invalidates the current session server-side.
+
+**Auth:** Yes
+
+**Response (200):**
+```json
+{ "data": { "message": "Logged out successfully" } }
+```
+
+---
+
+### POST /auth/otp/send
+
+Send a 6-digit OTP to the user's email for verification.
+
+**Auth:** No
+
+**Request:** `{ "email": "nx_zero@gzs.com" }`
+
+**Response (200):** `{ "data": { "message": "OTP sent", "expires_in": 600 } }`
+
+> In development the OTP is printed to the Core API console log.
+
+---
+
+### POST /auth/otp/verify
+
+Verify the OTP code received by email.
+
+**Auth:** No
+
+**Request:** `{ "email": "nx_zero@gzs.com", "code": "123456" }`
+
+**Response (200):** `{ "data": { "message": "Email verified", "verified": true } }`
+
+**Errors:** `OTP_NOT_FOUND` (400), `OTP_EXPIRED` (400), `OTP_INVALID` (400)
+
+---
+
+### POST /auth/password/forgot
+
+Trigger a password reset email (always returns 200 to prevent enumeration).
+
+**Auth:** No
+
+**Request:** `{ "email": "nx_zero@gzs.com" }`
+
+**Response (200):** `{ "data": { "message": "If that email exists, a reset link has been sent." } }`
+
+---
+
+### POST /auth/password/reset
+
+Reset password using a token from the reset email.
+
+**Auth:** No
+
+**Request:** `{ "token": "<reset-token>", "new_password": "GZS@newpass1" }`
+
+**Response (200):** `{ "data": { "message": "Password reset successfully" } }`
+
+---
+
+## /users — User Lookup
+
+### GET /users/me
+
+Fetch the authenticated user's account row.
+
+**Auth:** Yes
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": "uuid",
+    "username": "nx_zero",
+    "email": "nx_zero@gzs.com",
+    "role": "user",
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+**curl:**
+```bash
+curl http://localhost:8000/users/me \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
+### GET /users/u/{username}
+
+Look up a user by their public username.
+
+**Auth:** No
+
+**curl:**
+```bash
+curl http://localhost:8000/users/u/nx_zero
+```
+
+---
+
+## /profiles — Master & Sub-Profiles
+
+GZS uses a two-level profile system:
+- **Master profile** — one per user; stores identity, avatar, bio, trust score
+- **Sub-profiles** — domain-specific pages (e.g., `dev`, `gamer`, `creator`), linked to the master
+
+### GET /profiles/me
+
+Get the authenticated user's master profile with stats and sub-profile summary list.
+
+**Auth:** Yes
+
+**Response (200):**
+```json
+{
+  "data": {
+    "profile": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "username": "nx_zero",
+      "real_name": null,
+      "avatar_url": null,
+      "banner_url": null,
+      "location": null,
+      "platform_level": "Hustler",
+      "trust_score": 85.0,
+      "verified_checkmark": false,
+      "bio": null,
+      "verified_skills_count": 3,
+      "companies_worked_with_count": 1
+    },
+    "stats": {
+      "total_verified_skills": 3,
+      "active_sub_profiles_count": 2,
+      "companies_worked_with_count": 1
+    },
+    "sub_profiles": [
+      {
+        "id": "uuid",
+        "domain": "gamer",
+        "username": "nx_zero_gamer",
+        "primary_role": "FPS Pro",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+**curl:**
+```bash
+curl http://localhost:8000/profiles/me \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
+### PATCH /profiles/me
+
+Update master profile fields.
+
+**Auth:** Yes
+
+**Request (any subset):**
+```json
+{
+  "real_name": "Alex Chen",
+  "bio": "Competitive FPS player.",
+  "location": "Singapore",
+  "avatar_url": "https://..."
 }
 ```
 
 ---
 
-## Data Models
+### GET /profiles/{username}
 
-### Platform Levels
-- `Beginner` (default)
-- `Hustler` (1000 XP + 20 consecutive active days)
-- `Extreme` (5000 XP + 37 consecutive active days)
-- `Pro` (20000 XP + tournament win)
+Public master profile for any user.
 
-### Sub-Profile Domains
-- `dev` - Game Development
-- `esports` - Esports & Competition
-- `content` - Content & Streaming
-- `business` - Business & Strategy
-- `art` - Game Art & Design
-- `writing` - Writing & Narrative
-- `audio` - Audio & Sound Design
-
-### Community Branches
-- `/community/dev` - Game developers
-- `/community/esports` - Competitive players
-- `/community/content` - Streamers & creators
-- `/community/business` - Producers & managers
-- `/community/art` - Artists
-- `/community/writing` - Writers
-- `/community/audio` - Audio specialists
-- `/community/general` - Cross-domain discussion
-- `/community/newcomers` - Onboarding hub
-
-### Trust Score Components (1.0 - 10.0)
-- 30% - Verified skills
-- 25% - Community contributions (likes, comments, answers)
-- 15% - Reports/violations (negative)
-- 10% - Account age
-- 15% - Collaboration completion rate
-- 10% - Referral quality
+**Auth:** No
 
 ---
 
-## Testing the API
+### GET /profiles/me/sub
 
-### Using Postman
-1. Import OpenAPI schema: `http://localhost:8000/openapi.json`
-2. Create environment variables:
-   - `base_url` = `http://localhost:8000`
-   - `token` = (acquired from signup)
-3. Run requests from collection
+List all sub-profiles for the current user.
 
-### Using curl/bash
-```bash
-# 1. Sign up
-USER_EMAIL="test@example.com"
-USER_PASS="TestPass123!"
+**Auth:** Yes
 
-TOKEN=$(curl -s -X POST http://localhost:8000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d "{\"email\": \"$USER_EMAIL\", \"username\": \"testuser\", \"password\": \"$USER_PASS\"}" \
-  | jq -r '.data.access_token')
+**Response (200):** `{ "data": [ { sub-profile objects } ] }`
 
-# 2. Get my profile
-curl -X GET http://localhost:8000/profiles/me \
-  -H "Authorization: Bearer $TOKEN"
+---
 
-# 3. Create dev sub-profile
-curl -X POST http://localhost:8000/profiles/sub \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"domain": "dev", "username": "mydevname", "primary_role": "Game Developer"}'
+### POST /profiles/me/sub
+
+Create a new sub-profile.
+
+**Auth:** Yes
+
+**Request:**
+```json
+{
+  "domain": "gamer",
+  "username": "nx_zero_gamer",
+  "primary_role": "FPS Pro"
+}
 ```
 
 ---
 
-## Setup Checklist
+### GET /profiles/me/sub/{type}
 
-- [ ] Install Python 3.10+
-- [ ] Create PostgreSQL database named `gzonesphere`
-- [ ] Copy `.env.example` to `.env` and configure
-- [ ] Install dependencies: `pip install -r requirements.txt`
-- [ ] Run database migrations (SQL schema file)
-- [ ] Start API: `python -m uvicorn main:app --reload`
-- [ ] Verify Swagger UI: http://localhost:8000/docs
-- [ ] Create 9 default community branches
-- [ ] Populate skills taxonomy
-- [ ] Test signup → profile creation → skill addition flow
+Get a specific sub-profile by domain type (e.g., `gamer`, `dev`, `creator`).
+
+**Auth:** Yes
 
 ---
 
-## Performance Notes
+### PATCH /profiles/me/sub/{type}
 
-- All list endpoints paginated (default limit: 50)
-- Database indexed on frequently queried fields
-- Trust score calculation batched (background job recommended)
-- WebSocket support (coming Phase 2E) for real-time chat
+Update a specific sub-profile.
+
+**Auth:** Yes
 
 ---
 
-## Links
+### DELETE /profiles/me/sub/{type}
 
-- **Backend Documentation**: See `backend/core-api/README.md`
-- **Frontend Integration**: See `src/services/api/core.js`
-- **Database Schema**: `backend/sql/GzoneSphere_Phase2_Schema.sql`
-- **Models Documentation**: `backend/core-api/models.py`
+Delete a sub-profile.
+
+**Auth:** Yes
+
+---
+
+### POST /profiles/me/sub/{type}/skills
+
+Add a skill to a sub-profile.
+
+**Auth:** Yes
+
+**Request:**
+```json
+{
+  "name": "Valorant",
+  "category": "FPS",
+  "proficiency": "expert"
+}
+```
+
+---
+
+### DELETE /profiles/me/sub/{type}/skills/{skill_id}
+
+Remove a skill from a sub-profile.
+
+**Auth:** Yes
+
+---
+
+### GET /profiles/{username}/{type}
+
+Public sub-profile view for a given user and domain.
+
+**Auth:** No
+
+---
+
+## /tournaments — Tournaments
+
+### GET /tournaments
+
+List all tournaments. Supports filtering.
+
+**Auth:** No
+
+**Query params:**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `status` | string | `upcoming`, `ongoing`, `completed` |
+| `game_slug` | string | e.g., `valorant`, `csgo` |
+| `domain` | string | e.g., `esports` |
+| `participant_user_id` | uuid | Tournaments a specific user is registered for |
+
+**curl:**
+```bash
+curl "http://localhost:8000/tournaments?status=upcoming&game_slug=valorant"
+```
+
+---
+
+### GET /tournaments/{slug}
+
+Get a single tournament by slug.
+
+**Auth:** No
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": "uuid",
+    "slug": "gzs-valorant-open-2025",
+    "title": "GZS Valorant Open 2025",
+    "game_slug": "valorant",
+    "status": "upcoming",
+    "prize_pool": 10000,
+    "entry_fee": 0,
+    "max_participants": 128,
+    "start_date": "2025-07-01T00:00:00Z",
+    "registration_count": 47,
+    "format": "single_elimination",
+    "rules": "...",
+    "stages": [],
+    "prize_distribution": {}
+  }
+}
+```
+
+---
+
+### POST /tournaments/{id}/register
+
+Register the current user for a tournament.
+
+**Auth:** Yes
+
+**Request (optional fields):**
+```json
+{
+  "team_name": "NX Zero Squad",
+  "payment_reference": "ref_abc123"
+}
+```
+
+**Response (200):** `{ "data": { "registration_id": "uuid", "status": "registered" } }`
+
+---
+
+### GET /tournaments/{id}/registrations
+
+List registered participants.
+
+**Auth:** Yes
+
+---
+
+### GET /tournaments/{slug}/brackets
+
+Get bracket structure.
+
+**Auth:** No
+
+---
+
+### PUT /tournaments/{id}/brackets
+
+Update brackets (admin).
+
+**Auth:** Yes (admin)
+
+---
+
+### POST /tournaments/{id}/brackets/generate
+
+Auto-generate brackets from registrations (admin).
+
+**Auth:** Yes (admin)
+
+---
+
+### GET /tournaments/{slug}/results
+
+Get match results.
+
+**Auth:** No
+
+---
+
+### POST /tournaments
+
+Create a tournament (admin).
+
+**Auth:** Yes (admin)
+
+**Request:**
+```json
+{
+  "title": "GZS Valorant Open 2025",
+  "game_slug": "valorant",
+  "domain": "esports",
+  "format": "single_elimination",
+  "status": "upcoming",
+  "max_participants": 128,
+  "prize_pool": 10000,
+  "entry_fee": 0,
+  "start_date": "2025-07-01T00:00:00Z",
+  "end_date": "2025-07-07T00:00:00Z",
+  "registration_opens": "2025-06-01T00:00:00Z",
+  "registration_closes": "2025-06-28T00:00:00Z"
+}
+```
+
+---
+
+### PUT /tournaments/{id}
+
+Update a tournament (admin).
+
+**Auth:** Yes (admin)
+
+---
+
+### DELETE /tournaments/{id}
+
+Delete a tournament (admin).
+
+**Auth:** Yes (admin)
+
+---
+
+## /community — Branches & Channels
+
+### GET /community/branches
+
+List all community branches.
+
+**Auth:** No
+
+**Response (200):** `{ "data": [ { "id", "slug", "name", "game_slug", "member_count" } ] }`
+
+**curl:**
+```bash
+curl http://localhost:8000/community/branches
+```
+
+---
+
+### GET /community/{branch_slug}
+
+Get a single branch detail.
+
+**Auth:** No
+
+---
+
+### POST /community/{branch_slug}/join
+
+Join a branch.
+
+**Auth:** Yes
+
+---
+
+### GET /community/{branch}/channels
+
+List channels in a branch.
+
+**Auth:** No
+
+---
+
+### GET /community/{branch}/{channel}/messages
+
+Get messages in a channel. Supports cursor-based pagination with `before_id`.
+
+**Auth:** No (read) / Yes (write)
+
+---
+
+### POST /community/{branch}/{channel}/messages
+
+Send a message.
+
+**Auth:** Yes
+
+**Request:** `{ "content": "gg wp everyone" }`
+
+---
+
+### GET /community/{branch}/lfg
+
+List LFG (Looking for Group) posts.
+
+**Auth:** No
+
+---
+
+### POST /community/{branch}/lfg
+
+Create an LFG post.
+
+**Auth:** Yes
+
+---
+
+### GET /community/{branch}/showcase
+
+Get showcase entries for a branch.
+
+**Auth:** No
+
+---
+
+### GET /community/{branch}/events
+
+List events for a branch.
+
+**Auth:** No
+
+---
+
+### POST /community/{branch}/events
+
+Create an event (subject to admin approval).
+
+**Auth:** Yes
+
+---
+
+### GET /community/me/joined
+
+Branches the current user has joined.
+
+**Auth:** Yes
+
+---
+
+### GET /community/stats/live
+
+Platform-wide live community stats.
+
+**Auth:** No
+
+---
+
+## /social — Posts, Follow, Friends
+
+### POST /posts
+
+Create a social post.
+
+**Auth:** Yes
+
+**Request:**
+```json
+{
+  "content": "Just hit Radiant rank!",
+  "sub_profile_type": "gamer",
+  "media_urls": []
+}
+```
+
+---
+
+### GET /posts/feed
+
+Get the current user's social feed.
+
+**Auth:** Yes
+
+**Query params:** `page`, `limit`
+
+---
+
+### GET /posts/user/{username}
+
+Get posts by a specific user.
+
+**Auth:** No
+
+---
+
+### POST /posts/{id}/like
+
+Like a post.
+
+**Auth:** Yes
+
+---
+
+### POST /posts/{id}/comment
+
+Comment on a post.
+
+**Auth:** Yes
+
+**Request:** `{ "content": "Congrats!" }`
+
+---
+
+### DELETE /posts/{id}
+
+Delete own post.
+
+**Auth:** Yes
+
+---
+
+### POST /follow/{username}/{sub_profile_type}
+
+Follow a user's sub-profile.
+
+**Auth:** Yes
+
+**curl:**
+```bash
+curl -X POST http://localhost:8000/follow/nx_zero/gamer \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
+### DELETE /follow/{username}/{sub_profile_type}
+
+Unfollow.
+
+**Auth:** Yes
+
+---
+
+### POST /social/friends/{user_id}/request
+
+Send a friend request.
+
+**Auth:** Yes
+
+---
+
+### POST /social/friends/{user_id}/accept
+
+Accept a friend request.
+
+**Auth:** Yes
+
+---
+
+### GET /social/suggestions
+
+Get suggested people to connect with.
+
+**Auth:** Yes
+
+---
+
+## /companies — Company Profiles
+
+### GET /companies
+
+List all companies.
+
+**Auth:** No
+
+---
+
+### GET /companies/{slug}
+
+Get a company by slug.
+
+**Auth:** No
+
+---
+
+### POST /companies
+
+Create a company (verified account required).
+
+**Auth:** Yes
+
+**Request:**
+```json
+{
+  "name": "Nexus Labs",
+  "slug": "nexus-labs",
+  "domain": "esports",
+  "description": "Esports org based in Singapore."
+}
+```
+
+---
+
+### GET /companies/{slug}/team
+
+List team members.
+
+**Auth:** No
+
+---
+
+### GET /companies/{slug}/roles
+
+List open roles.
+
+**Auth:** No
+
+---
+
+### GET /companies/{slug}/talent
+
+Talent pool applicants (company members only).
+
+**Auth:** Yes (company member)
+
+---
+
+### GET /companies/{slug}/analytics
+
+Company analytics dashboard data.
+
+**Auth:** Yes (company member)
+
+---
+
+## /messages — Direct Messages
+
+### GET /messages/conversations
+
+List all DM conversations.
+
+**Auth:** Yes
+
+---
+
+### GET /messages/{conversation_id}
+
+Get messages in a conversation.
+
+**Auth:** Yes
+
+---
+
+### POST /messages/{conversation_id}
+
+Send a message.
+
+**Auth:** Yes
+
+**Request:** `{ "content": "Hey, want to team up?" }`
+
+---
+
+## /notifications — Notifications
+
+### GET /notifications
+
+Get all notifications.
+
+**Auth:** Yes
+
+**Response (200):**
+```json
+{
+  "data": {
+    "unread_count": 3,
+    "items": [
+      {
+        "id": "uuid",
+        "type": "friend_request",
+        "message": "nx_zero sent you a friend request.",
+        "read": false,
+        "created_at": "2025-05-23T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+> The frontend's `profileService.getNotifications()` extracts `r.data?.items ?? []`.
+
+**curl:**
+```bash
+curl http://localhost:8000/notifications \
+  -H "Authorization: Bearer <token>"
+```
+
+---
+
+### POST /notifications/{id}/read
+
+Mark one notification read.
+
+**Auth:** Yes
+
+---
+
+### POST /notifications/read-all
+
+Mark all notifications read.
+
+**Auth:** Yes
+
+---
+
+## /reading-list — Saved Articles
+
+### GET /reading-list
+
+Get the current user's saved articles.
+
+**Auth:** Yes
+
+---
+
+### POST /reading-list/{slug}
+
+Save an article by slug.
+
+**Auth:** Yes
+
+---
+
+### DELETE /reading-list/{slug}
+
+Remove from reading list.
+
+**Auth:** Yes
+
+---
+
+## /xp — Progression
+
+### GET /xp/me
+
+Get current user's XP and level.
+
+**Auth:** Yes
+
+**Response (200):**
+```json
+{
+  "data": {
+    "level": "Hustler",
+    "current_xp": 450,
+    "xp_to_next_level": 550,
+    "total_xp": 4450,
+    "rank": "Hustler"
+  }
+}
+```
+
+---
+
+### GET /xp/leaderboard
+
+Get the platform XP leaderboard.
+
+**Auth:** No
+
+---
+
+## Error Code Reference
+
+| Code | HTTP | Meaning |
+|------|------|---------|
+| `INVALID_CREDENTIALS` | 401 | Wrong email or password |
+| `INVALID_TOKEN` | 401 | Token malformed or expired |
+| `INVALID_TOKEN_TYPE` | 401 | Access token used where refresh expected |
+| `TOKEN_SUBJECT_MISSING` | 401 | JWT `sub` claim is absent |
+| `USER_NOT_FOUND` | 401/404 | No user for the given ID/email |
+| `EMAIL_TAKEN` | 409 | Email already registered |
+| `USERNAME_TAKEN` | 409 | Username already in use |
+| `USERNAME_RESERVED` | 409 | Username temporarily locked |
+| `PROFILE_NOT_FOUND` | 404 | No master profile found |
+| `PASSWORD_TOO_SHORT` | 422 | Password under 8 characters |
+| `PASSWORD_MISSING_UPPERCASE` | 422 | No uppercase letter in password |
+| `OTP_EXPIRED` | 400 | OTP code TTL exceeded (10 min) |
+| `OTP_INVALID` | 400 | OTP code is wrong |
+| `DB_ERROR` | 503 | Database unreachable |
+
+---
+
+## Pagination
+
+List endpoints accept:
+
+| Param | Default | Description |
+|-------|---------|-------------|
+| `page` | `1` | Page number (1-indexed) |
+| `limit` | `20` | Items per page (max 100) |
+| `before_id` | — | Cursor paging for messages — fetch before this ID |
+
+Paginated responses include:
+
+```json
+{
+  "data": [ ... ],
+  "meta": { "page": 1, "limit": 20, "total": 143 },
+  "error": null
+}
+```

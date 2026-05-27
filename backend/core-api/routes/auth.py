@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from auth import create_access_token, create_refresh_token, hash_password, verify_password, verify_token
 from database import get_db
-from models import MasterProfile, User
+from models import MasterProfile, ReservedUsername, User
 from schemas import (
     ForgotPasswordRequest,
     OtpSendRequest,
@@ -113,6 +113,15 @@ def get_current_user(
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+    # Throttled last_active_at stamp — update at most once per 5 minutes
+    now = datetime.now(timezone.utc)
+    if user.last_active_at is None or (now - user.last_active_at.replace(tzinfo=timezone.utc)).total_seconds() > 300:
+        user.last_active_at = now
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+
     return user
 
 
@@ -132,6 +141,22 @@ def register(payload: UserSignUp, db: Session = Depends(get_db)):
         error_response(
             "USERNAME_TAKEN",
             "This username is already in use.",
+            {"username": payload.username},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    reserved = (
+        db.query(ReservedUsername)
+        .filter(
+            ReservedUsername.username == payload.username,
+            ReservedUsername.reserved_until > datetime.now(timezone.utc),
+        )
+        .first()
+    )
+    if reserved:
+        error_response(
+            "USERNAME_RESERVED",
+            "This username is temporarily unavailable.",
             {"username": payload.username},
             status=status.HTTP_409_CONFLICT,
         )
@@ -174,7 +199,7 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    token_payload = {"sub": str(user.id), "type": "access"}
+    token_payload = {"sub": str(user.id), "type": "access", "role": getattr(user, "role", "user")}
     access_token = create_access_token(token_payload, expires_delta=timedelta(minutes=15))
     refresh_token = create_refresh_token({"sub": str(user.id)})
 
@@ -230,7 +255,7 @@ def refresh_token(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
         )
 
     access_token = create_access_token(
-        {"sub": str(user.id), "type": "access"},
+        {"sub": str(user.id), "type": "access", "role": getattr(user, "role", "user")},
         expires_delta=timedelta(minutes=15),
     )
 

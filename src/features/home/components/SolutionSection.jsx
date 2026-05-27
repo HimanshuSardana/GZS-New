@@ -16,7 +16,7 @@ const PILLARS = [
 export default function SolutionSection() {
   return (
     <section className="section-white">
-      <div className="section-container">
+      <div className="container-global">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -43,8 +43,7 @@ export default function SolutionSection() {
             >
               {p.coming && (
                 <span
-                  className="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded"
-                  style={{ background: '#FEF3C7', color: '#92400E' }}
+                  className="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-[var(--status-warning-soft)] text-[var(--status-warning)]"
                 >
                   Coming Soon
                 </span>

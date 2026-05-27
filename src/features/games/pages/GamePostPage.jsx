@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -18,10 +18,12 @@ import {
   ModesSection,
   ReviewsSection,
   CommunitySection,
+  CriticRatingSection,
   JoinCommunitySection,
   MediaGallerySection,
   GetGameSection,
   StoreExtrasSection,
+  AwardsSection,
   MoreLikeThisSection,
 } from './sections';
 
@@ -64,6 +66,27 @@ export default function GamePostPage({ previewData }) {
   const { data: gameData, isLoading } = useGame(slug);
   const [activeTab, setActiveTab] = useState('overview');
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveTab(entry.target.id);
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: '-120px 0px -60% 0px' }
+    );
+
+    const sections = ['overview', 'story', 'gameplay', 'media', 'reviews', 'community'];
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const rawData = previewData || gameData || GAMES[slug] || GAMES.valorant;
   const loading = !previewData && isLoading;
 
@@ -76,13 +99,13 @@ export default function GamePostPage({ previewData }) {
   const data = adaptGameRecord(rawData);
 
   const theme = data.theme || {
-    primary: '#e11d48',
-    primaryDark: '#be123c',
-    primaryLight: '#fb7185',
-    bgPage: '#050505',
-    bgSection: '#0c0c0c',
-    border: 'rgba(255,255,255,0.05)',
-    textHeading: '#ffffff',
+    primary: 'var(--gp-red, #e53935)',
+    primaryDark: 'var(--gp-red-dark, #c62828)',
+    primaryLight: 'var(--gp-red-light, #ef5350)',
+    bgPage: '#FFFFFF',
+    bgSection: '#F1F5F9',
+    border: '#E2E8F0',
+    textHeading: '#0F172A',
   };
 
   const handleTabClick = (id) => {
@@ -124,12 +147,6 @@ export default function GamePostPage({ previewData }) {
       </Helmet>
 
       <div className="gp-page-bg gp-page-shell">
-        <div className="gp-light-pattern fixed inset-0 pointer-events-none" />
-        <div className="gp-bg-blob gp-bg-blob-1" />
-        <div className="gp-bg-blob gp-bg-blob-2" />
-        <div className="gp-bg-blob gp-bg-blob-3" />
-
-        <div className="gp-top-accent" />
         <SectionNav activeTab={activeTab} onTabClick={handleTabClick} />
 
         <div className="gp-page-content">
@@ -168,11 +185,18 @@ export default function GamePostPage({ previewData }) {
               extras={data.store_extras}
               purchaseLinks={data.get_game?.purchaseLinks}
             />
+            <AwardsSection awards={data.awards_and_achievements} />
           </div>
 
           <div id="gp-section-community">
             <MoreLikeThisSection games={data.related_games} />
-            <CommunitySection community={data.community_hub} />
+            <CriticRatingSection
+              score={data.gzs_score}
+              descriptor={data.score_descriptor}
+              expertReviews={data.expert_reviews}
+              gameSlug={slug}
+            />
+            <CommunitySection community={data.community_hub} gameSlug={slug} />
             <JoinCommunitySection
               community={data.join_our_community}
               criticRating={data.critic_rating}

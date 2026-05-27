@@ -1,17 +1,19 @@
 import core from '@/services/api/core';
-import { CORE } from '@/services/api/endpoints';
+import { safeApiCall } from '@/services/mockApiService';
 
-export const esportsService = {
-    getLeaderboard: async (params = {}) => {
-        try { return await core.get('/esports/leaderboard', { params }); }
-        catch { return []; }
-    },
-    getMatches: async (params = {}) => {
-        try { return await core.get('/esports/matches', { params }); }
-        catch { return []; }
-    },
-    getLiveScores: async () => {
-        try { return await core.get('/esports/live'); }
-        catch { return []; }
-    },
+const esportsService = {
+  getLeaderboard: (params = {}) => safeApiCall(
+    () => core.get('/esports/leaderboard', { params }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
+  getMatches: (params = {}) => safeApiCall(
+    () => core.get('/esports/matches', { params }).then(r => r.data),
+    () => Promise.resolve([])
+  ),
+  getLiveScores: () => safeApiCall(
+    () => core.get('/esports/live').then(r => r.data),
+    () => Promise.resolve([])
+  ),
 };
+
+export default esportsService;

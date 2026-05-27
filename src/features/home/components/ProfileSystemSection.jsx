@@ -6,13 +6,13 @@ import SectionHeading from './shared/SectionHeading';
 import ProfileCardStack from './shared/ProfileCardStack';
 
 const DOMAINS = [
-  { label: 'Game Dev', color: '#4F46E5', bg: '#EEF2FF' },
-  { label: 'Esports', color: '#16A34A', bg: '#F0FDF4' },
-  { label: 'Content', color: '#EA580C', bg: '#FFF7ED' },
-  { label: 'Business', color: '#0891B2', bg: '#ECFEFF' },
-  { label: 'Art', color: '#C026D3', bg: '#FDF4FF' },
-  { label: 'Writing', color: '#059669', bg: '#ECFDF5' },
-  { label: 'Audio', color: '#2563EB', bg: '#EFF6FF' },
+  { label: 'Game Dev', color: 'var(--theme-primary)', bg: 'var(--theme-primary-soft)' },
+  { label: 'Esports', color: 'var(--home-tourney-accent)', bg: 'var(--home-tourney-bg)' },
+  { label: 'Content', color: 'var(--home-community-accent)', bg: 'var(--home-community-bg)' },
+  { label: 'Business', color: 'var(--home-games-accent)', bg: 'var(--home-games-bg)' },
+  { label: 'Art', color: 'var(--home-profile-accent)', bg: 'var(--home-profile-bg)' },
+  { label: 'Writing', color: 'var(--home-tourney-accent)', bg: 'var(--home-tourney-bg)' },
+  { label: 'Audio', color: 'var(--theme-primary)', bg: 'var(--theme-primary-soft)' },
 ];
 
 const DIFFERENTIATORS = [
@@ -24,7 +24,7 @@ const DIFFERENTIATORS = [
 export default function ProfileSystemSection() {
   return (
     <section className="section-white">
-      <div className="section-container">
+      <div className="container-global">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
             <SectionOverline>The Identity System</SectionOverline>

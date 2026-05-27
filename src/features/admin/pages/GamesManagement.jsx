@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiEye, FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 import { useToast } from '@/shared/components/Toast';
-import { MOCK_GAMES_LIST } from '@/shared/data/gamesData';
+import { useGames, useUpdateGame, useDeleteGame } from '@/services/mutators/useGames';
 import { AdminPageHero, AdminPanel } from '../components/AdminContentShell';
 
 const PAGE_SIZE = 5;
@@ -36,15 +36,10 @@ function nextStatus(status) {
 }
 
 function getStatusClass(status) {
-  if (status === 'Published') {
-    return 'bg-emerald-100 text-emerald-700';
-  }
-
-  if (status === 'Draft') {
-    return 'bg-slate-200 text-slate-700';
-  }
-
-  return 'bg-red-100 text-red-700';
+  // Returns an object for use with style prop
+  if (status === 'Published') return { background: 'var(--status-success-bg)', color: 'var(--status-success-text)' };
+  if (status === 'Draft')     return { background: 'var(--status-draft-bg)',    color: 'var(--status-draft-text)' };
+  return                               { background: 'var(--status-danger-bg)',  color: 'var(--status-danger-text)' };
 }
 
 function formatNumber(value) {
@@ -58,8 +53,12 @@ export default function GamesManagement() {
   const { showToast } = useToast();
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
-  const [games, setGames] = useState(() =>
-    MOCK_GAMES_LIST.map((game, index) => ({
+  const { data: gamesData = [], isLoading } = useGames();
+  const { mutate: updateGame } = useUpdateGame();
+  const { mutate: deleteGame } = useDeleteGame();
+
+  const games = useMemo(() => {
+    return gamesData.map((game, index) => ({
       id: game.id,
       slug: game.slug,
       title: game.title,
@@ -68,8 +67,8 @@ export default function GamesManagement() {
       status: normalizeStatus(game.status),
       views: Number(game.view_count || (game.aggregate_score || 0) * 7200 + (index + 1) * 240),
       reviews: game.expert_reviews?.length || 0,
-    })),
-  );
+    }));
+  }, [gamesData]);
 
   const filteredGames = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -91,20 +90,24 @@ export default function GamesManagement() {
   const currentPage = Math.min(page, pageCount);
   const paginatedGames = filteredGames.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  function handleDelete(id, title) {
-    if (!window.confirm(`Delete "${title}" from the games library?`)) {
-      return;
-    }
+  const handleDelete = (gameId) => {
+    if (!window.confirm('Delete this game? This cannot be undone.')) return;
+    deleteGame(gameId, {
+      onSuccess: () => showToast('Game deleted', 'success'),
+      onError: () => showToast('Failed to delete game', 'error'),
+    });
+  };
 
-    setGames((current) => current.filter((item) => item.id !== id));
-    showToast('Game removed from the library.', 'success');
-  }
+  const handleStatusToggle = (gameId, currentStatus) => {
+    const newStatus = nextStatus(currentStatus).toLowerCase();
+    updateGame({ id: gameId, status: newStatus }, {
+      onSuccess: () => showToast('Game status updated', 'success'),
+      onError: () => showToast('Failed to update status', 'error'),
+    });
+  };
 
-  function handleToggleStatus(id) {
-    setGames((current) =>
-      current.map((item) => (item.id === id ? { ...item, status: nextStatus(item.status) } : item)),
-    );
-    showToast('Game status updated.', 'success');
+  if (isLoading) {
+    return <div className="admin-page-shell">Loading games...</div>;
   }
 
   return (
@@ -142,7 +145,7 @@ export default function GamesManagement() {
           />
         </div>
 
-        <div className="admin-table-wrap mt-5">
+        <div className="admin-table-wrapper mt-5">
           <table className="admin-table">
             <thead>
               <tr>
@@ -167,9 +170,7 @@ export default function GamesManagement() {
                   <td>{game.genre}</td>
                   <td>{game.platform}</td>
                   <td>
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getStatusClass(game.status)}`}>
-                      {game.status}
-                    </span>
+                    <span className="admin-status-badge" style={getStatusClass(game.status)}>{game.status}</span>
                   </td>
                   <td>{formatNumber(game.views)}</td>
                   <td>{game.reviews}</td>
@@ -183,10 +184,10 @@ export default function GamesManagement() {
                         <FiEye size={14} />
                         View
                       </button>
-                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => handleToggleStatus(game.id)}>
+                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => handleStatusToggle(game.id, game.status)}>
                         Toggle Status
                       </button>
-                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => handleDelete(game.id, game.title)}>
+                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => handleDelete(game.id)}>
                         <FiTrash2 size={14} />
                         Delete
                       </button>
@@ -210,12 +211,12 @@ export default function GamesManagement() {
             Showing {paginatedGames.length ? (currentPage - 1) * PAGE_SIZE + 1 : 0}-{Math.min(currentPage * PAGE_SIZE, filteredGames.length)} of {filteredGames.length}
           </p>
           <div className="flex items-center gap-2">
-            <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={currentPage === 1}>
+            <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={currentPage === 1}>
               <FiChevronLeft size={14} />
               Previous
             </button>
             <span className="text-sm font-semibold text-slate-600">Page {currentPage} of {pageCount}</span>
-            <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setPage((value) => Math.min(pageCount, value + 1))} disabled={currentPage === pageCount}>
+            <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setPage((value) => Math.min(pageCount, value + 1))} disabled={currentPage === pageCount}>
               Next
               <FiChevronRight size={14} />
             </button>

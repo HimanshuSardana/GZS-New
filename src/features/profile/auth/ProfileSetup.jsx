@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthLayout from '@/app/layouts/AuthLayout';
+import useProfileStore from '@/store/profile/useProfileStore';
 import { FiUser, FiBriefcase, FiArrowRight } from 'react-icons/fi';
 
 export default function ProfileSetup() {
     const navigate = useNavigate();
     const [selected, setSelected] = useState(null);
+    const setAccountType = useProfileStore(state => state.setAccountType);
 
     const handleNext = () => {
+        if (!selected) return;
+        
+        // Persist selection
+        setAccountType(selected);
+        localStorage.setItem('gzs_account_type', selected);
+
         if (selected === 'individual') {
             navigate('/profile/master-setup');
         } else if (selected === 'organization') {

@@ -69,6 +69,10 @@
     overflow-x: hidden;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   h1 { @apply gzs-h1; }
   h2 { @apply gzs-h2; }
   h3 { @apply gzs-h3; }
@@ -76,35 +80,12 @@
   p {
     margin-bottom: var(--space-4);
   }
-
-  section {
-    @apply section-padding;
-  }
 }
 
 /* ── 6. Layout Helpers ── */
 
 /* Centred content wrapper — max 1280 px with horizontal breathing room */
-.page-container {
-  width: 100%;
-  max-width: var(--content-max);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: var(--space-6);
-  padding-right: var(--space-6);
-}
 
-/* Full-width section with standard vertical rhythm */
-.page-section {
-  padding-top: var(--space-16);
-  padding-bottom: var(--space-16);
-}
-
-/* Compact section variant */
-.page-section--sm {
-  padding-top: var(--space-10);
-  padding-bottom: var(--space-10);
-}
 
 /* Theme-aware card surface */
 .card-base {
@@ -115,13 +96,7 @@
 }
 
 /* App canvas — root wrapper created in main.jsx */
-.app-canvas {
-  width: 100%;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-}
+
 
 /* App shell — full viewport column layout */
 .app-shell {
@@ -171,10 +146,143 @@
 @import "./tournaments.css";
 @import "./community.css";
 
-/* ── 8. Keyframe Animations ── */
+/* ── 9. Global Design System Utilities ── */
 
-/* Toast slide-in (used by ToastProvider) */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(2rem) scale(0.95); }
-  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+.gzs-section {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
+}
+
+
+
+
+
+
+
+.gzs-heading-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  color: var(--theme-text);
+  line-height: var(--leading-tight);
+}
+
+.gzs-heading-md {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--theme-text);
+}
+
+.gzs-heading-sm {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+.gzs-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--theme-primary-muted);
+  color: var(--theme-primary);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gzs-divider {
+  height: 1px;
+  width: 100%;
+  background-color: var(--theme-border);
+  margin: var(--space-8) 0;
+  border: none;
+}
+
+/* ── 10. Screen Reader & Accessibility ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── 11. Typography & Content ── */
+.gzs-prose {
+  max-width: 65ch;
+  line-height: 1.75;
+  color: var(--theme-text);
+}
+
+.gzs-prose h1, .gzs-prose h2, .gzs-prose h3 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  color: var(--theme-text);
+}
+
+.gzs-prose p {
+  margin-bottom: 1.5em;
+}
+
+.gzs-prose a {
+  color: var(--theme-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ── 12. Animations & Skeleton ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes gzs-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.gzs-animate-in {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+.gzs-skeleton {
+  background: linear-gradient(90deg, 
+    var(--theme-bg-alt) 25%, 
+    var(--theme-border) 50%, 
+    var(--theme-bg-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: gzs-shimmer 1.5s infinite linear;
+  border-radius: var(--radius-md);
+  min-height: 1em;
+}
+
+/* ── 13. Focus Styles ── */
+*:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }

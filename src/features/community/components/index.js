@@ -5,7 +5,6 @@ export { default as BranchNavSidebar }  from './BranchNavSidebar';
 export { default as ChannelSidebar }    from './ChannelSidebar';
 export { default as LiveActivityPulse } from './LiveActivityPulse';
 export { default as TrendingPostsFeed } from './TrendingPostsFeed';
-export { default as HiringCard }        from './HiringCard';
 
 // Chat primitives (used in CommunityRoom, GroupView, ConversationView)
 export { default as ChatInput }   from './Chat/ChatInput';

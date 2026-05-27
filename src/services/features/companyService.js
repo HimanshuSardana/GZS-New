@@ -1,71 +1,72 @@
 import core from '../api/core';
 import { CORE } from '../api/endpoints';
+import { mockApiService, safeApiCall } from '@/services/mockApiService';
 
 export const companyService = {
-  getCompanies: async () => {
-    const response = await core.get(CORE.COMPANY.LIST);
-    return response;
-  },
+  getCompanies: () => safeApiCall(
+    () => core.get(CORE.COMPANY.LIST).then(r => r.data),
+    () => mockApiService.getAllOrganizations()
+  ),
 
-  getCompanyBySlug: async (slug) => {
-    const response = await core.get(CORE.COMPANY.BY_SLUG(slug));
-    return response;
-  },
+  getCompanyBySlug: (slug) => safeApiCall(
+    () => core.get(CORE.COMPANY.BY_SLUG(slug)).then(r => r.data),
+    () => mockApiService.getAllOrganizations().then(list => list.find(o => o.slug === slug || o.id === slug))
+  ),
 
-  getMyCompany: async () => {
-    const response = await core.get(CORE.COMPANY.ME);
-    return response;
-  },
+  getMyCompany: () => safeApiCall(
+    () => core.get(CORE.COMPANY.ME).then(r => r.data),
+    () => mockApiService.getAllOrganizations().then(list => list[0])
+  ),
 
-  createCompany: async (data) => {
-    const response = await core.post(CORE.COMPANY.CREATE, data);
-    return response;
-  },
+  createCompany: (data) => safeApiCall(
+    () => core.post(CORE.COMPANY.CREATE, data).then(r => r.data),
+    () => Promise.resolve({ success: true, ...data })
+  ),
 
-  updateCompany: async (id, data) => {
-    const response = await core.put(CORE.COMPANY.UPDATE(id), data);
-    return response;
-  },
+  updateCompany: (id, data) => safeApiCall(
+    () => core.put(CORE.COMPANY.UPDATE(id), data).then(r => r.data),
+    () => Promise.resolve({ success: true, ...data })
+  ),
 
-  getMembers: async (id) => {
-    const response = await core.get(CORE.COMPANY.MEMBERS(id));
-    return response;
-  },
+  getMembers: (id) => safeApiCall(
+    () => core.get(CORE.COMPANY.MEMBERS(id)).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-  addMember: async (id, data) => {
-    const response = await core.post(CORE.COMPANY.MEMBER_ADD(id), data);
-    return response;
-  },
+  addMember: (id, data) => safeApiCall(
+    () => core.post(CORE.COMPANY.MEMBER_ADD(id), data).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-  removeMember: async (id, userId) => {
-    const response = await core.delete(CORE.COMPANY.MEMBER_REMOVE(id, userId));
-    return response;
-  },
+  removeMember: (id, userId) => safeApiCall(
+    () => core.delete(CORE.COMPANY.MEMBER_REMOVE(id, userId)).then(r => r.data),
+    () => Promise.resolve({ success: true })
+  ),
 
-  getOpportunities: async (id) => {
-    const response = await core.get(CORE.COMPANY.OPPORTUNITIES(id));
-    return response;
-  },
+  getOpportunities: (id) => safeApiCall(
+    () => core.get(CORE.COMPANY.OPPORTUNITIES(id)).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-  getTalentPool: async (slug) => {
-    const response = await core.get(CORE.COMPANY.TALENT_POOL(slug));
-    return response;
-  },
+  getTalentPool: (slug) => safeApiCall(
+    () => core.get(CORE.COMPANY.TALENT_POOL(slug)).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-  getTeam: async (slug) => {
-    const response = await core.get(CORE.COMPANY.TEAM(slug));
-    return response;
-  },
+  getTeam: (slug) => safeApiCall(
+    () => core.get(CORE.COMPANY.TEAM(slug)).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-  getOpenRoles: async (slug) => {
-    const response = await core.get(CORE.COMPANY.OPEN_ROLES(slug));
-    return response;
-  },
+  getOpenRoles: (slug) => safeApiCall(
+    () => core.get(CORE.COMPANY.OPEN_ROLES(slug)).then(r => r.data),
+    () => Promise.resolve([])
+  ),
 
-  getAnalytics: async (slug) => {
-    const response = await core.get(CORE.COMPANY.ANALYTICS(slug));
-    return response;
-  }
+  getAnalytics: (slug) => safeApiCall(
+    () => core.get(CORE.COMPANY.ANALYTICS(slug)).then(r => r.data),
+    () => Promise.resolve({ views: 1240, applications: 45 })
+  )
 };
 
 export default companyService;

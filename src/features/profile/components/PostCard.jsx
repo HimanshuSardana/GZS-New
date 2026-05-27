@@ -1,15 +1,6 @@
 import { useState } from 'react';
-
-const DOMAIN_META = {
-  dev: { label: 'Dev', color: 'var(--domain-dev)' },
-  esports: { label: 'Esports', color: 'var(--domain-esports)' },
-  content: { label: 'Content', color: 'var(--domain-content)' },
-  business: { label: 'Business', color: 'var(--domain-business)' },
-  art: { label: 'Art', color: 'var(--domain-art)' },
-  writing: { label: 'Writing', color: 'var(--domain-writing)' },
-  audio: { label: 'Audio', color: 'var(--domain-audio)' },
-  master: { label: 'Master', color: 'var(--theme-primary)' },
-};
+import { FiHeart, FiMessageCircle, FiRepeat, FiShare2 } from 'react-icons/fi';
+import DomainBadge from '@/shared/components/DomainBadge';
 
 function formatDate(value) {
   return new Date(value).toLocaleDateString([], {
@@ -22,58 +13,122 @@ function formatDate(value) {
 export default function PostCard({ post }) {
   const [likes, setLikes] = useState(post.like_count ?? 0);
   const [liked, setLiked] = useState(false);
-  const meta = DOMAIN_META[post.sub_profile_type || 'master'] || DOMAIN_META.master;
+  const domain = post.sub_profile_type && post.sub_profile_type !== 'master' ? post.sub_profile_type : null;
 
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex items-start gap-4">
+    <article
+      style={{
+        background: 'var(--theme-card)',
+        border: '1px solid var(--theme-border)',
+        borderRadius: 12,
+        padding: '16px 20px',
+        marginBottom: 12,
+      }}
+    >
+      {/* Author row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <img
           src={post.author?.avatar_url}
           alt={post.author?.display_name}
-          className="h-12 w-12 rounded-2xl object-cover"
+          style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
         />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-900">{post.author?.display_name}</h3>
-            <span className="text-sm text-slate-400">@{post.author?.username}</span>
-            <span
-              className="rounded-full px-2.5 py-1 text-xs font-semibold"
-              style={{ backgroundColor: `${meta.color}18`, color: meta.color }}
-            >
-              {meta.label}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--theme-text)' }}>
+              {post.author?.display_name}
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--theme-text-subtle)' }}>
+              @{post.author?.username}
+            </span>
+            {domain && <DomainBadge domain={domain} size="sm" variant="pill" />}
+            <span style={{ fontSize: 11, color: 'var(--theme-text-subtle)', marginLeft: 'auto' }}>
+              {formatDate(post.published_at || post.created_at)}
             </span>
           </div>
-          <p className="mt-1 text-sm text-slate-500">{post.author?.primary_role}</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">{formatDate(post.published_at || post.created_at)}</p>
+          {post.author?.primary_role && (
+            <div style={{ fontSize: 12, color: 'var(--theme-text-muted)' }}>
+              {post.author.primary_role}
+            </div>
+          )}
         </div>
       </div>
 
-      <p className="mt-5 text-sm leading-7 text-slate-700">{post.content}</p>
+      {/* Content */}
+      <p style={{ marginTop: 14, fontSize: 13, color: 'var(--theme-text-muted)', lineHeight: 1.6 }}>
+        {post.content}
+      </p>
 
-      {post.media_urls?.[0] ? (
-        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
-          <img src={post.media_urls[0]} alt="Post media" className="h-auto w-full object-cover" />
+      {/* Media */}
+      {post.media_urls?.[0] && (
+        <div
+          style={{
+            marginTop: 12,
+            borderRadius: 8,
+            overflow: 'hidden',
+            border: '1px solid var(--theme-border)',
+          }}
+        >
+          <img src={post.media_urls[0]} alt="Post media" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
-      ) : null}
+      )}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+      {/* Engagement row */}
+      <div
+        style={{
+          marginTop: 14,
+          paddingTop: 12,
+          borderTop: '1px solid var(--theme-border)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+        }}
+      >
         <button
           type="button"
           onClick={() => {
-            setLiked((current) => !current);
-            setLikes((current) => current + (liked ? -1 : 1));
+            setLiked((c) => !c);
+            setLikes((c) => c + (liked ? -1 : 1));
           }}
-          className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-            liked ? 'bg-violet-50 text-violet-700' : 'bg-slate-50 text-slate-600 hover:text-violet-700'
-          }`}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'transparent',
+            color: liked ? '#ff4d6d' : 'var(--theme-text-subtle)',
+            fontSize: 12, fontWeight: 600,
+          }}
         >
-          Like ({likes})
+          <FiHeart size={14} style={{ fill: liked ? '#ff4d6d' : 'none' }} /> {likes}
         </button>
-        <button type="button" className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-violet-700">
-          Comments ({post.comment_count ?? 0})
+        <button
+          type="button"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'transparent', color: 'var(--theme-text-subtle)', fontSize: 12, fontWeight: 600,
+          }}
+        >
+          <FiMessageCircle size={14} /> {post.comment_count ?? 0}
         </button>
-        <button type="button" className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-violet-700">
-          Share ({post.share_count ?? 0})
+        <button
+          type="button"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'transparent', color: 'var(--theme-text-subtle)', fontSize: 12, fontWeight: 600,
+          }}
+        >
+          <FiRepeat size={14} /> {post.share_count ?? 0}
+        </button>
+        <button
+          type="button"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'transparent', color: 'var(--theme-text-subtle)', fontSize: 12, fontWeight: 600,
+            marginLeft: 'auto',
+          }}
+        >
+          <FiShare2 size={14} />
         </button>
       </div>
     </article>
