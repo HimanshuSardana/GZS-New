@@ -20,5 +20,11 @@ END $$;
 GRANT ALL PRIVILEGES ON DATABASE "GzoneSphere" TO gzs_core_user;
 GRANT ALL PRIVILEGES ON DATABASE "GzoneSphere" TO gzs_cms_user;
 
+-- Schema-level grants — required for table creation by app users
+GRANT ALL ON SCHEMA public TO gzs_core_user;
+GRANT ALL ON SCHEMA public TO gzs_cms_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO gzs_core_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO gzs_cms_user;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
