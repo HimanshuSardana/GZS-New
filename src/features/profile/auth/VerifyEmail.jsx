@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '@/app/layouts/AuthLayout';
 import { usePageTheme } from '@/app/providers/ThemeProvider';
 import { authService } from '@/services';
@@ -8,6 +8,7 @@ import { FiMail } from 'react-icons/fi';
 export default function VerifyEmail() {
     usePageTheme('auth');
 
+    const navigate  = useNavigate();
     const location  = useLocation();
     const email     = location.state?.email || '';
 
@@ -15,9 +16,11 @@ export default function VerifyEmail() {
     const [resent, setResent]       = useState(false);
     const [countdown, setCountdown] = useState(0);
 
-    // Auto-redirect removed as per typical real auth flow, 
-    // usually users stay here until they click the link in email or we poll for status.
-    // However, I will keep the component structure as is.
+    // Auto-redirect to login after 3s (no real email sending in dev)
+    useEffect(() => {
+        const t = setTimeout(() => navigate('/login', { replace: true }), 3000);
+        return () => clearTimeout(t);
+    }, [navigate]);
 
     useEffect(() => {
         let timer;
