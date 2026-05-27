@@ -114,6 +114,10 @@ async def startup_event():
         env = os.getenv("ENV", "production")
         logger.info(f"[startup] environment: {env}")
 
+        # Create tables
+        init_db()
+        logger.info("[startup] tables created / verified")
+
         # ── Step 1: Always seed community branches (idempotent) ──
         # This is safe in all environments — creates branches that don't exist,
         # skips ones that do.
